@@ -8,7 +8,8 @@ Run commands from the repository root after [installation](../docs/installation.
 | [`02_roundtrip.sh`](02_roundtrip.sh) | Prepare, train, encode, decode and verify a 1% bound | NVIDIA CUDA + training extras |
 | [`03_stream_roi.py`](03_stream_roi.py) | Measure an ROI without saving a decompressed movie | A supported archive + CUDA |
 | [`04_package_imagej_example.py`](04_package_imagej_example.py) | Package an archive for sharing with ImageJ users | An encoded archive + Python |
-| [ImageJ walkthrough](../imagej/README.md) | Virtual loading, CPU/GPU selection and compatibility checks | ImageJ/Fiji |
+| [`05_download_compressed.py`](05_download_compressed.py) | Select a public dataset and frame range; download compressed files only | Python standard library, no GPU |
+| [ImageJ walkthrough](../imagej/README.md) | Open biological examples, CPU/GPU selection and compatibility checks | ImageJ/Fiji |
 
 ```bash
 bash tutorials/02_roundtrip.sh

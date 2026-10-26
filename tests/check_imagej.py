@@ -30,7 +30,7 @@ def main():
         rows[name]=java('FiARC_Java_Check',*args);print(rows[name],flush=True)
     with tempfile.TemporaryDirectory(prefix='xero-imagej-test-') as temp:
         temp=Path(temp)
-        with zipfile.ZipFile(root/'imagej/examples/XERO_demo.zip') as z:
+        with zipfile.ZipFile(root/'tests/fixtures/XERO_synthetic.zip') as z:
             assert all(n.startswith('XERO_demo/') and '..' not in Path(n).parts for n in z.namelist())
             z.extractall(temp)
         with h5py.File(a.reference) as f:reference=f['data'][:]

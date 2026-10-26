@@ -1,0 +1,38 @@
+{
+  "jar_sha256": "02f885913a508559bbfe2d43e9a75a46eed3f125c0c9c51b73553732b344d5d5",
+  "java": "openjdk version \"1.8.0_504\"\nOpenJDK Runtime Environment (Temurin)(build 1.8.0_504-b01)\nOpenJDK 64-Bit Server VM (Temurin)(build 25.504-b01, mixed mode)\n",
+  "platform": "Linux x86_64; ImageJ 1.54p; NVIDIA RTX 5090",
+  "checks": {
+    "synthetic_cpu": {
+      "exit_code": 0,
+      "seconds": 75.13767175283283,
+      "stdout": "PASS actual menu open, cpu, 160 resident frames; all pixels bit-exact; Java 1.8.0_504\n",
+      "stderr": ""
+    },
+    "synthetic_gpu": {
+      "exit_code": 0,
+      "seconds": 1.6716843359172344,
+      "stdout": "PASS actual menu open, gpu, 160 resident frames; all pixels bit-exact; Java 1.8.0_504\n",
+      "stderr": ""
+    },
+    "XERO_OpenScope": {
+      "exit_code": 0,
+      "seconds": 2.680774980224669,
+      "stdout": "PASS actual menu open, gpu, 128 resident frames; all pixels bit-exact; Java 1.8.0_504\n",
+      "stderr": ""
+    },
+    "XERO_Spinal_Cord": {
+      "exit_code": 0,
+      "seconds": 1.985796645283699,
+      "stdout": "PASS actual menu open, gpu, 128 resident frames; all pixels bit-exact; Java 1.8.0_504\n",
+      "stderr": ""
+    },
+    "OpenScope_seek": {
+      "exit_code": 0,
+      "seconds": 2.793140882626176,
+      "stdout": "PASS actual menu open, gpu, 128 resident frames; all pixels bit-exact; Java 1.8.0_504\n",
+      "stderr": ""
+    }
+  },
+  "passed": true
+}

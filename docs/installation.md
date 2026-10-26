@@ -43,4 +43,4 @@ Do not run the integration test alongside a memory-critical experiment. CUDA tes
 - **No CUDA device:** use the viewer/ImageJ for decoding, or run the CLI on an NVIDIA CUDA machine.
 - **Output already exists:** choose a new output directory. XERO does not overwrite an archive; a failed encode leaves an `INCOMPLETE` marker for inspection.
 - **TIFF not memory-mappable:** explicitly convert to uncompressed TIFF or HDF5. XERO will not silently load a huge compressed TIFF into RAM.
-- **Out of memory:** reduce training batch/cache/patch size; for viewing use virtual mode and/or the ImageJ low-VRAM fallback. A large native XY may still require more memory.
+- **Out of memory:** reduce training batch/cache/patch size. In ImageJ, open a shorter frame range and optionally select the low-VRAM GPU fallback. In the browser, virtual loading is also available. A large native XY may still require more memory.

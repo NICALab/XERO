@@ -27,7 +27,21 @@ Train, compress, decompress and analyze microscopy data with XERO, or open compr
 
 **[Open XERO in your browser](https://xero-viewer.pages.dev/xero/)** — choose a dataset, select a frame range and load it. Use GPU acceleration when available, or the CPU fallback. The viewer provides contrast controls, zoom, virtual loading, ROI measurements and TIFF export. A compatible browser is sufficient; no Python installation is needed.
 
-Prefer Fiji/ImageJ? **[Install the XERO plugin](imagej/README.md)** and try the **[small example movie](imagej/examples/XERO_demo.zip?raw=true)**. No browser or Python process is needed.
+Prefer Fiji/ImageJ? **[Install the XERO plugin](imagej/README.md)** and try the **[OpenScope calcium](imagej/examples/XERO_OpenScope.zip)** or **[spinal-cord voltage](imagej/examples/XERO_Spinal_Cord.zip)** example. Open the GitHub file page and click its download icon. The plugin appears under **Plugins → Compression (XERO)**; no browser or Python process is needed.
+
+## Download compressed recordings
+
+Use the standalone Python script to download from the viewer's live catalog. No XERO installation, GPU, Cloudflare credentials or decompression is needed.
+
+```bash
+python tutorials/05_download_compressed.py --list
+python tutorials/05_download_compressed.py --dataset openscope \
+  --start 0 --end 128 --output downloads/openscope
+python tutorials/05_download_compressed.py --dataset spinal-cord-voltage \
+  --start 0 --end 128 --output downloads/spinal_cord
+```
+
+`start` is included and `end` is excluded, using **zero-based source indices**. Necessary restart context and complete packets are included; `download.json` records the exact source/local mapping. [Dataset selection, resume and ImageJ instructions →](docs/download.md)
 
 ## Quick start
 
@@ -103,7 +117,7 @@ Memory is bounded by the restart block, neural workspaces and the consumer—not
 | Directory | Contents |
 |---|---|
 | [`src/xero`](src/xero) | Training, compression, streaming decoding and CUDA kernels |
-| [`tutorials`](tutorials) | Synthetic round trip and on-demand ROI analysis |
+| [`tutorials`](tutorials) | Training round trip, on-demand ROI analysis and compressed-data downloader |
 | [`imagej`](imagej) | Installable JAR, Java/OpenCL sources, build instructions and license notices |
 | [`tests`](tests) | Input/format checks and optional CUDA integration tests |
 | [`docs`](docs) | Installation, scientific contract, training and release validation |

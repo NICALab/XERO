@@ -1,0 +1,406 @@
+[
+  {
+    "release": "src/xero/_internal/seeded_spatial_codec.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/experiments/ahrens_fixed_error/seeded_spatial_codec.py",
+    "source_sha256": "0dc0a34bcc80193d6de3b641869103b17a860155f1d3babb2796f866ac35fc9f",
+    "release_sha256": "ae0ec1b5e71a362ae7cecc7a54b3b6ac0a56fd8bb8e751c9dc528da37f75030c",
+    "extracted_symbols": null,
+    "replacements": [
+      "0<tolerance<=.05",
+      "supported range (0, .05]"
+    ]
+  },
+  {
+    "release": "src/xero/_internal/sequence_codec.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/experiments/ahrens_fixed_error/sequence_codec.py",
+    "source_sha256": "3a2800b0bafcbc1d401ea347252ef3789872da63e47611076e5f6f71f60d4d84",
+    "release_sha256": "3a2800b0bafcbc1d401ea347252ef3789872da63e47611076e5f6f71f60d4d84",
+    "extracted_symbols": null,
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/history_policy.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/experiments/support_longterm/history_policy.py",
+    "source_sha256": "3699dd281a06a5b63e7e184f0bc40a1402c1940f5c688e489bf8df9637143a86",
+    "release_sha256": "3699dd281a06a5b63e7e184f0bc40a1402c1940f5c688e489bf8df9637143a86",
+    "extracted_symbols": null,
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/training_stability.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/experiments/support_longterm/training_stability.py",
+    "source_sha256": "07f6645a931df068b87e685d55d742adf13d73d2bc4804e866d7a11b83b843bf",
+    "release_sha256": "07f6645a931df068b87e685d55d742adf13d73d2bc4804e866d7a11b83b843bf",
+    "extracted_symbols": null,
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/fiarc_bank.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/experiments/support_longterm/fiarc_bank.py",
+    "source_sha256": "ebaa78e1f269290ed796e190bc5deb1c06acab2743535eae2348990944c3709e",
+    "release_sha256": "ebaa78e1f269290ed796e190bc5deb1c06acab2743535eae2348990944c3709e",
+    "extracted_symbols": null,
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/normalization_stats.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/experiments/support_longterm/normalization_stats.py",
+    "source_sha256": "2e6eeb6248e2261a8f809e1fbac1d1c31bdaa1e76743c24d1dd228fb8656de71",
+    "release_sha256": "9c89069beb3a56d921bef486cdf2ba6fafd636271eedd3184a78f878dfe52a76",
+    "extracted_symbols": null,
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/boundary_training.py",
+    "source": "experiments/multidata_fixed_20260918/boundary_training.py",
+    "source_sha256": "4dff3c61c2d23888fc586edd17939390666d164573c6aeff6da71a2f2979c3c7",
+    "release_sha256": "4dff3c61c2d23888fc586edd17939390666d164573c6aeff6da71a2f2979c3c7",
+    "extracted_symbols": null,
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/memory_safety.py",
+    "source": "experiments/portable_rate_speed_20261004/memory_safety.py",
+    "source_sha256": "210d94e9d5405540734addf94827030041b72ef3298cef29bed64da806daa995",
+    "release_sha256": "210d94e9d5405540734addf94827030041b72ef3298cef29bed64da806daa995",
+    "extracted_symbols": null,
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/fiarc_stream_order.py",
+    "source": "baseline_comparison/src/fiarc_stream_order.py",
+    "source_sha256": "814a12f8c18b7a6ea36d60fd921ba894c68446fae7cb6403b2ff9f803fd0b813",
+    "release_sha256": "814a12f8c18b7a6ea36d60fd921ba894c68446fae7cb6403b2ff9f803fd0b813",
+    "extracted_symbols": null,
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/canonical_entropy.py",
+    "source": "experiments/portable_rate_speed_20261004/canonical_entropy.py",
+    "source_sha256": "92e01c8d07b56663905b8dc7e354dbad7f5bc9097fbb08148103d53335671723",
+    "release_sha256": "92e01c8d07b56663905b8dc7e354dbad7f5bc9097fbb08148103d53335671723",
+    "extracted_symbols": null,
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/integer_ptq_screen.py",
+    "source": "experiments/portable_rate_speed_20261004/integer_ptq_screen.py",
+    "source_sha256": "9bd4936afca8abc290010917fe2703e9c6feeed79862ac34ff1d8559f22bdcee",
+    "release_sha256": "905caec0a7eced258deb3569245acb14e0121cb45b96926e74be658f8703d71c",
+    "extracted_symbols": [
+      "IntConv",
+      "CanonicalActivation",
+      "convert",
+      "conditioning_tolerance",
+      "canonical_preprocessing"
+    ],
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/conv_integer.py",
+    "source": "experiments/portable_rate_speed_20261004/conv_integer.py",
+    "source_sha256": "29fc2912d8fb08288dc993b6018712ed13d6311644f3dac50a67e0e0b579a1a3",
+    "release_sha256": "79ecf6309f508c35c4f828c40fa7f77a7641cc1a61371f3b631ba3db3c35852c",
+    "extracted_symbols": [
+      "maximum_kernel",
+      "scale_kernel",
+      "quantize_kernel",
+      "epilogue_kernel",
+      "kernel",
+      "conv",
+      "FastIntConv",
+      "replace_with_fast"
+    ],
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/integer_archive.py",
+    "source": "experiments/portable_rate_speed_20261004/integer_archive.py",
+    "source_sha256": "8880d27726c9e9d495bf25d444430a9c9426672af7dd289abdc01418b694b97d",
+    "release_sha256": "5be9fc66b7b1c3600a651b9e462d37525bd1b7a4508eabafefbbe35f78c87b14",
+    "extracted_symbols": [
+      "serialized_profile",
+      "digest",
+      "write_model",
+      "load_model"
+    ],
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/integer_gpu_reader.py",
+    "source": "experiments/portable_rate_speed_20261004/integer_gpu_reader.py",
+    "source_sha256": "be3e5c42196112c2c44edbf22d1472e8fc3f7b5ec36dc03ae2f3f7c3b9eadcb5",
+    "release_sha256": "61ea0fb0246ef36e6f1ca2caef892559d0f440598ee94335dd6005a0e1e4f068",
+    "extracted_symbols": [
+      "prepare"
+    ],
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/historical_matched.py",
+    "source": "experiments/portable_rate_speed_20261004/historical_matched.py",
+    "source_sha256": "d3eae43c96114762c5067a2ac91f466519663e2c4d01adbb6d01f933b4cbbdb1",
+    "release_sha256": "dc3978b77ab4f49770c90c9aec33ccf2b52cf9ac7a0b53f0da37748dc29dd0dc",
+    "extracted_symbols": [
+      "IndependentReader"
+    ],
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/speed_probe.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/experiments/allen_bidirectional_20260916/speed_probe.py",
+    "source_sha256": "17b8f348018231b77cf68f487ee5669584202f081d50d72aafd5bb175b9f32f0",
+    "release_sha256": "a1b56a757bc30da857116e7806866a0f7379b6d5d71a4f1ae367e9572cbee112",
+    "extracted_symbols": [
+      "Sink"
+    ],
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/sustained_speed.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/experiments/allen_bidirectional_20260916/sustained_speed.py",
+    "source_sha256": "e5a08cf584a1de01e950295f96cbea2206ad3690436af368adb8f6abeded8ba0",
+    "release_sha256": "c64a3d76381ec87a4054d9776730e3e3d93b91ce92bc12a892d12fba7993dd27",
+    "extracted_symbols": [
+      "Runtime"
+    ],
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/integer_codec_speed.py",
+    "source": "experiments/portable_rate_speed_20261004/integer_codec_speed.py",
+    "source_sha256": "7bf7ad03be2481ea570a8c409af3a1670951955e602d781b056154e5d1168b85",
+    "release_sha256": "fc3ac80ad3f28b3234289220c4e52a6c9d961e66c9fe886f7509ed7b154e06cf",
+    "extracted_symbols": [
+      "IntegerRuntime"
+    ],
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/ram_runtime.py",
+    "source": "experiments/multidata_fixed_20260918/ram_runtime.py",
+    "source_sha256": "fb05621d12de94f54be4a7d2ee37cb17cb0b9d75b9c0ec2960ed51773ce6cd06",
+    "release_sha256": "ea969c777ad3a85cc7e14f9a8f51751bb789cd885289d70abc3e7750872a8c1d",
+    "extracted_symbols": [
+      "PinnedSource",
+      "PinnedOutput"
+    ],
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/large_fov_restart.py",
+    "source": "experiments/portable_rate_speed_20261004/large_fov_restart.py",
+    "source_sha256": "8404ed436dbec1618f31787a022513de7fd667fec50c03c93d1bf18ed86f974a",
+    "release_sha256": "d3c83c0314134a57544d0ac14dd4baf18024f105d65182dcbd33e8ddd81424e0",
+    "extracted_symbols": [
+      "shift_history",
+      "advance_in_place",
+      "memory_stream",
+      "MemoryReader",
+      "_uneven_pack_frame",
+      "memory_order",
+      "compact_pending_cdfs",
+      "memory_encode_sequence",
+      "SingleGroupSource",
+      "encode_segments",
+      "decode_segments"
+    ],
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/reassessment_codec.py",
+    "source": "experiments/reassessment_20261004/reassessment_codec.py",
+    "source_sha256": "57af25982d90a33fb1a2e3763758bb3fa9e365ea0050e2511c88fc0cf6c8b859",
+    "release_sha256": "1987c54d75c5824f62a22a8d8fc0be9189b915a0f5f3ba015e66f72a7eafa2ce",
+    "extracted_symbols": [
+      "interval",
+      "Codec"
+    ],
+    "replacements": []
+  },
+  {
+    "release": "src/xero/_internal/fiarc_train.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/experiments/support_longterm/fiarc_train.py",
+    "source_sha256": "f8134d1e2393250a4e4603c53c01642d9dfb3749326f31bf83028fc9ab18e3aa",
+    "release_sha256": "40284714891b5fb26ce316d3aa942650bda9d6e8767ba38885e4a22022f1a8f6",
+    "extracted_symbols": [
+      "snapshot",
+      "build",
+      "byte_audit",
+      "plots",
+      "main"
+    ],
+    "replacements": [
+      "            hist=seq[:,:a.history];tail=seq[:,a.history:]\n            with torch.no_grad():\n                _,hist=bounded_symbols(hist,torch.full_like(hist,mean),codec.final_step,tol);first=torch.rand(a.batch,device=a.device)<.01\n                hist=torch.where(first[:,None,None,None],mean,hist)\n                for k in range(a.rollout):\n                    with torch.autocast('cuda',dtype=torch.bfloat16):\n                        pred=forecast_chunk(predictor,hist,mean,std,1,first if k==0 else False);v=net(tail[:,k:k+1],pred,mean,std,'learned',False)\n                    hist=corrected_history(hist,v['rec'])\n                hist=torch.where(first[:,None,None,None],mean,hist)\n            target=tail[:,-1:];opt.zero_grad(set_to_none=True)",
+      "learn_even_refinement=True).to(a.device)"
+    ]
+  },
+  {
+    "release": "src/ficompress/seed_sequence_rans.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/seed_sequence_rans.py",
+    "source_sha256": "e8318edda8ed9ae1bbee6e56611b3f27f62f5610323540a20843e1d0f0479f83",
+    "release_sha256": "e8318edda8ed9ae1bbee6e56611b3f27f62f5610323540a20843e1d0f0479f83"
+  },
+  {
+    "release": "src/ficompress/seed_bypass_codec.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/seed_bypass_codec.py",
+    "source_sha256": "9b9272f7ea93fb75c7473c3278b020e92cda60fda4b47e3eb046c09c51a2282a",
+    "release_sha256": "9b9272f7ea93fb75c7473c3278b020e92cda60fda4b47e3eb046c09c51a2282a"
+  },
+  {
+    "release": "src/ficompress/seed_rans_gpu.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/seed_rans_gpu.py",
+    "source_sha256": "0842342d5a1a163e57d575245cc73c1d90f0ae2393799471f08739ec40873b5a",
+    "release_sha256": "0842342d5a1a163e57d575245cc73c1d90f0ae2393799471f08739ec40873b5a"
+  },
+  {
+    "release": "src/ficompress/packet_bypass.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/packet_bypass.py",
+    "source_sha256": "88f133fe245123413ab898041554e1685110d0df2fc21a33d9db04b8ac3a71a7",
+    "release_sha256": "88f133fe245123413ab898041554e1685110d0df2fc21a33d9db04b8ac3a71a7"
+  },
+  {
+    "release": "src/ficompress/seed_packet_format.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/seed_packet_format.py",
+    "source_sha256": "3041b538c2285d0a631f7f91def988221c143ddfe60f6e4291e295deff621bbb",
+    "release_sha256": "3041b538c2285d0a631f7f91def988221c143ddfe60f6e4291e295deff621bbb"
+  },
+  {
+    "release": "src/ficompress/models/neural_symbol_entropy.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/models/neural_symbol_entropy.py",
+    "source_sha256": "589c89a55941adc7539e7e74172167845a1c63ab70b38b24510e04891d7513c9",
+    "release_sha256": "589c89a55941adc7539e7e74172167845a1c63ab70b38b24510e04891d7513c9"
+  },
+  {
+    "release": "src/ficompress/models/learned_correction_entropy.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/models/learned_correction_entropy.py",
+    "source_sha256": "db726ea506a06fb8e08c4fa1c6b039b2432e3062f48186a1abf11e180108afc9",
+    "release_sha256": "db726ea506a06fb8e08c4fa1c6b039b2432e3062f48186a1abf11e180108afc9"
+  },
+  {
+    "release": "src/ficompress/differentiable_spatial.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/differentiable_spatial.py",
+    "source_sha256": "dc308c910e06ba2ce65286b779d044101d5d10c1ad3cbcee8a74651576bcce5e",
+    "release_sha256": "dc308c910e06ba2ce65286b779d044101d5d10c1ad3cbcee8a74651576bcce5e"
+  },
+  {
+    "release": "src/ficompress/context_rans.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/context_rans.py",
+    "source_sha256": "654c3b88c59a19e919c759783956d74ca7ec0165929753d40d3a93ef6fa64958",
+    "release_sha256": "654c3b88c59a19e919c759783956d74ca7ec0165929753d40d3a93ef6fa64958"
+  },
+  {
+    "release": "src/ficompress/spatial_training.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/spatial_training.py",
+    "source_sha256": "5774b5e4598679502b923eb4eca4c2bd68e97d7aae44003fa2606040e4af956a",
+    "release_sha256": "5774b5e4598679502b923eb4eca4c2bd68e97d7aae44003fa2606040e4af956a"
+  },
+  {
+    "release": "src/ficompress/spatial_gpu.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/spatial_gpu.py",
+    "source_sha256": "69f28d3bdf30785884885e862ad1a11823671ccf0eb58d0cf2af65027059b89e",
+    "release_sha256": "69f28d3bdf30785884885e862ad1a11823671ccf0eb58d0cf2af65027059b89e"
+  },
+  {
+    "release": "src/ficompress/checkerboard_entropy.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/checkerboard_entropy.py",
+    "source_sha256": "8d191e3208ef28e01e443ca264d987f26b44aa5c09754ccce7cde7b674d9ebd4",
+    "release_sha256": "8d191e3208ef28e01e443ca264d987f26b44aa5c09754ccce7cde7b674d9ebd4"
+  },
+  {
+    "release": "src/ficompress/checkerboard_entropy_cuda.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/checkerboard_entropy_cuda.py",
+    "source_sha256": "c740f220f629620d79b5195fb272ff4fcedbdc8254bb25de5ed1a14c52c83c3b",
+    "release_sha256": "c740f220f629620d79b5195fb272ff4fcedbdc8254bb25de5ed1a14c52c83c3b"
+  },
+  {
+    "release": "src/ficompress/models/grouped_spatial_codec.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/models/grouped_spatial_codec.py",
+    "source_sha256": "306a7590e4ae3ed93f5fd7053369541cba5558f8439128fe9512502ece8a0763",
+    "release_sha256": "306a7590e4ae3ed93f5fd7053369541cba5558f8439128fe9512502ece8a0763"
+  },
+  {
+    "release": "src/ficompress/bounded_quantizer_cuda.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/bounded_quantizer_cuda.py",
+    "source_sha256": "38aaee06b7301d074b3cfea48b0a323dcf3b217c0b27bd5db429a9bc62983a7a",
+    "release_sha256": "38aaee06b7301d074b3cfea48b0a323dcf3b217c0b27bd5db429a9bc62983a7a"
+  },
+  {
+    "release": "src/ficompress/even_correction_refinement.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/even_correction_refinement.py",
+    "source_sha256": "40ec661995348e084ca4809ef3d717a6a102937474a7c85d66be911ef5eacbd6",
+    "release_sha256": "40ec661995348e084ca4809ef3d717a6a102937474a7c85d66be911ef5eacbd6"
+  },
+  {
+    "release": "src/ficompress/models/cell_seed_locations.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/models/cell_seed_locations.py",
+    "source_sha256": "d2b8c119f60845cdeb03112a71233db139c3f5cf922042ac3ae3465b7a8d5975",
+    "release_sha256": "d2b8c119f60845cdeb03112a71233db139c3f5cf922042ac3ae3465b7a8d5975"
+  },
+  {
+    "release": "src/ficompress/models/chunk_forecast.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/models/chunk_forecast.py",
+    "source_sha256": "f365ecccf5523baabbb8f74ecca3af89958caad50b47ac2ef350da76b26ef040",
+    "release_sha256": "f365ecccf5523baabbb8f74ecca3af89958caad50b47ac2ef350da76b26ef040"
+  },
+  {
+    "release": "src/ficompress/models/causal_pixel_predictor.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/models/causal_pixel_predictor.py",
+    "source_sha256": "ef0fc3f26c3942acae114df4bea6da89e3136ecd5c5f16f7a6fdedba7a4f2a30",
+    "release_sha256": "ef0fc3f26c3942acae114df4bea6da89e3136ecd5c5f16f7a6fdedba7a4f2a30"
+  },
+  {
+    "release": "src/ficompress/csrc/seed_rans_gpu.cpp",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/csrc/seed_rans_gpu.cpp",
+    "source_sha256": "df8a111a4105d95bbd00b3f1783195731c2967bff5cb7f3a32b2adf7818b3442",
+    "release_sha256": "df8a111a4105d95bbd00b3f1783195731c2967bff5cb7f3a32b2adf7818b3442"
+  },
+  {
+    "release": "src/ficompress/csrc/seed_rans_gpu.cu",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/csrc/seed_rans_gpu.cu",
+    "source_sha256": "217c1a67ae9a81852126b269305676e578f8b27557585486886ac6a68f4fc15f",
+    "release_sha256": "217c1a67ae9a81852126b269305676e578f8b27557585486886ac6a68f4fc15f"
+  },
+  {
+    "release": "src/ficompress/csrc/seed_sequence_decode.cpp",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/csrc/seed_sequence_decode.cpp",
+    "source_sha256": "7252c1884d2484dd5ec413c8ce3c511436333393358492ee70b1126aeb8e72cd",
+    "release_sha256": "7252c1884d2484dd5ec413c8ce3c511436333393358492ee70b1126aeb8e72cd"
+  },
+  {
+    "release": "src/ficompress/csrc/seed_sequence_decode.cu",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/csrc/seed_sequence_decode.cu",
+    "source_sha256": "09db81ab8bbe2819df49ff96ee6d80b35d30cbb672f0cd9c2c09d7ca01014f11",
+    "release_sha256": "09db81ab8bbe2819df49ff96ee6d80b35d30cbb672f0cd9c2c09d7ca01014f11"
+  },
+  {
+    "release": "src/ficompress/categorical17_rans.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/categorical17_rans.py",
+    "source_sha256": "c7d0b36ab5ede66ad39ea6912d64a770365d12bd8bf20780eb9fb2b45f9a7c05",
+    "release_sha256": "c7d0b36ab5ede66ad39ea6912d64a770365d12bd8bf20780eb9fb2b45f9a7c05"
+  },
+  {
+    "release": "src/ficompress/pixel_rans.py",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/pixel_rans.py",
+    "source_sha256": "6dfa0f372887013bfe57a3f3a443f7a58479ad9257110bcf6a3aed05efbedfcd",
+    "release_sha256": "6dfa0f372887013bfe57a3f3a443f7a58479ad9257110bcf6a3aed05efbedfcd"
+  },
+  {
+    "release": "src/ficompress/csrc/seed_bypass_codec.cpp",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/csrc/seed_bypass_codec.cpp",
+    "source_sha256": "526fe09e51e094d49fbee4a14a9f3c4bef6e23cc1bb05ea7d54b603ffbb06ccc",
+    "release_sha256": "526fe09e51e094d49fbee4a14a9f3c4bef6e23cc1bb05ea7d54b603ffbb06ccc"
+  },
+  {
+    "release": "src/ficompress/csrc/context_rans_cpu.cpp",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/csrc/context_rans_cpu.cpp",
+    "source_sha256": "b575d22a4b45d34f4cb6cf34316703538fe6d448a417398b200212c4c2f624a3",
+    "release_sha256": "b575d22a4b45d34f4cb6cf34316703538fe6d448a417398b200212c4c2f624a3"
+  },
+  {
+    "release": "src/ficompress/csrc/pixel_rans_cpu.cpp",
+    "source": "protocols/fiarc_causal_seed_r64_v1/snapshot/src/ficompress/csrc/pixel_rans_cpu.cpp",
+    "source_sha256": "d744cae166c899ec0be854803d701a68393a92d4c28a8454d6887d9b0325d051",
+    "release_sha256": "d744cae166c899ec0be854803d701a68393a92d4c28a8454d6887d9b0325d051"
+  }
+]

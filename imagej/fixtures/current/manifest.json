@@ -1,0 +1,22 @@
+{
+  "profile": "fiarc_integer_experimental_v1",
+  "shape": [
+    8,
+    49,
+    61
+  ],
+  "restart": 128,
+  "model": "model.npz",
+  "model_sha256": "f14f4a9821e565dd1c006e4541aecc2d62f046471ae417c9b58b470a3d432691",
+  "groups": [
+    {
+      "file": "group_000000.bin",
+      "start": 0,
+      "frames": 8,
+      "bytes": 4768,
+      "sha256": "e46ad123ced834f7592bf17a2d4df78b0579d68929ca3caafe4eec857aa21e77"
+    }
+  ],
+  "history": "repeat_first_decoded",
+  "tolerance": 0.01
+}

@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-26",
+  "scope": "Software release validation; artificial data, not biological performance",
+  "original_equivalence": {
+    "original_codec_packet_bytes_identical": true,
+    "original_model_bytes_identical": true,
+    "original_decoded_pixels_bit_exact": true,
+    "frames": 160,
+    "pixels": 655360,
+    "violations": 0
+  },
+  "tests": {
+    "passed": 7,
+    "cuda_opt_in": true,
+    "coverage": [
+      "signed/zero/tiny values",
+      "odd native XY",
+      "restart seek",
+      "corruption rejection",
+      "overwrite rejection",
+      "disjoint data splits"
+    ]
+  },
+  "imagej": {
+    "jar_sha256": "20c5aa184d2d89d790b2887459aa0394bf0c9f352680e51e86a751e264790510",
+    "bytes": 1892722,
+    "selfchecks": {
+      "cpu": "PASS \u2014 bit-exact strict v2 restart/seek test\nOS: Linux / amd64\nJava: 21.0.12.1\nBackend: Java CPU\nTile size: 0\nSHA-256: e12a8807622091752bf0409898dace5bb8ed9c810a77ec5bb286a84a722dbd7e\nPASS \u2014 current CLI 49\u00d761 / 1% synthetic native-reference check\nCLI SHA-256: 4903d58e2d0f4bb22f9e3f75a5cdc965d79c2ae7fb05502149329d0f6127f095\nElapsed (not an FPS benchmark): 2.81 s\n",
+      "gpu": "PASS \u2014 bit-exact strict v2 restart/seek test\nOS: Linux / amd64\nJava: 21.0.12.1\nBackend: NVIDIA GeForce RTX 5090\nTile size: 0\nSHA-256: e12a8807622091752bf0409898dace5bb8ed9c810a77ec5bb286a84a722dbd7e\nPASS \u2014 current CLI 49\u00d761 / 1% synthetic native-reference check\nCLI SHA-256: 4903d58e2d0f4bb22f9e3f75a5cdc965d79c2ae7fb05502149329d0f6127f095\nElapsed (not an FPS benchmark): 0.51 s\n"
+    }
+  },
+  "environment": {
+    "python": "3.12.13",
+    "torch": "2.13.0+cu130",
+    "cuda": "13.0",
+    "triton": "3.7.1",
+    "gpu": "NVIDIA RTX 5090",
+    "os": "Linux x86_64"
+  },
+  "known_limitations": [
+    "Untrained degenerate checkpoint can fail audit; no manifest is emitted.",
+    "Windows/macOS ImageJ runtime qualification not executed in this local release.",
+    "No universal device/driver or hostile-file security guarantee."
+  ]
+}

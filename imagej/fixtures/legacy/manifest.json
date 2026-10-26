@@ -1,0 +1,40 @@
+{
+  "profile": "fiarc_strict_graph_DEVELOPMENT_v2",
+  "shape": [
+    131,
+    64,
+    64
+  ],
+  "restart": 128,
+  "model": "model.npz",
+  "correction": "correction.bin",
+  "sha256": {
+    "model.npz": "442be2e2ca1c058c78a50848f79cab29700c2c71504337e40921364cb9df1840",
+    "correction.bin": "500e106fe2eb1af7e6375870c5123d5d66e0d988b8ac8180167fb5c5777bea8b"
+  },
+  "groups": [
+    {
+      "file": "group_0000.bin",
+      "start": 0,
+      "frames": 64,
+      "bytes": 12200,
+      "sha256": "d2bdf993ef4b26fc640c2873db560e4572d0c3591b8b4110c10423c9fd94e4ee"
+    },
+    {
+      "file": "group_0001.bin",
+      "start": 64,
+      "frames": 64,
+      "bytes": 10053,
+      "sha256": "d10c6e60cd319acf13c8ffbf5a5120f7cde9cae3c32e6efbc717de21f796c0d0"
+    },
+    {
+      "file": "group_0002.bin",
+      "start": 128,
+      "frames": 3,
+      "bytes": 3076,
+      "sha256": "e6da3f13b49da2590ea8079725d20865b68c482057e9a9e1a3795ee19a8e719b"
+    }
+  ],
+  "tolerance": 0.01,
+  "unfinished": "Development screen; not full cross-backend qualification or speed acceptance."
+}

@@ -1,0 +1,10 @@
+{
+  "jar": "XERO_ImageJ.jar",
+  "bytes": 1892722,
+  "sha256": "20c5aa184d2d89d790b2887459aa0394bf0c9f352680e51e86a751e264790510",
+  "dependencies": {
+    "gson.jar": "57928d6e5a6edeb2abd3770a8f95ba44dce45f3b23b7a9dc2b309c581552a78b",
+    "jocl.jar": "88e425bda01a3edb15777f7831eaa364bde3d19c6a833b51a018a5ffac3ad667",
+    "aircompressor.jar": "fdbef3137a28f63bb0cb93487803080ede746a4ec3d421e36c6f0c305c35e5e4"
+  }
+}

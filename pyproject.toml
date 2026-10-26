@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xero-microscopy"
+version = "0.1.0"
+description = "Error-bounded neural compression of optical microscopy images"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.11"
+authors = [{name = "Minho Eom and NICALab"}]
+dependencies = ["numpy>=1.26", "h5py>=3.10", "tifffile>=2024.1", "zstandard>=0.25", "ninja>=1.11"]
+
+[project.optional-dependencies]
+train = ["matplotlib>=3.8", "tensorboard>=2.16"]
+test = ["pytest>=8"]
+
+[project.scripts]
+xero = "xero.cli:main"
+
+[project.urls]
+Repository = "https://github.com/NICALab/XERO"
+Viewer = "https://xero-viewer.pages.dev/xero/"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+ficompress = ["csrc/*.cpp", "csrc/*.cu"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+markers = ["cuda: requires NVIDIA CUDA and the development toolkit"]

@@ -33,7 +33,7 @@ def close_runtime(runtime):
 
 def release_caches():
     from fiarc_stream_order import clear_plan_cache
-    from ficompress.checkerboard_entropy import even_indices,odd_indices
+    from xero._primitives.checkerboard_entropy import even_indices,odd_indices
     clear_plan_cache();even_indices.cache_clear();odd_indices.cache_clear()
     gc.collect();torch.cuda.empty_cache()
 

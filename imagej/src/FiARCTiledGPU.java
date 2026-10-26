@@ -50,7 +50,7 @@ public strictfp final class FiARCTiledGPU extends FiARCStrictGPU {
         for(int j=0;j<tasks;j++){final int from=j*n/tasks,to=(j+1)*n/tasks;jobs.add(workers.submit(()->work.run(from,to)));}
         try{for(Future<?> f:jobs)f.get();}catch(InterruptedException e){for(Future<?> f:jobs)f.cancel(true);Thread.currentThread().interrupt();throw new CancellationException();}catch(ExecutionException e){for(Future<?> f:jobs)f.cancel(true);throw new IllegalStateException("Host tile preparation failed",e.getCause());}
     }
-    float globalScale(Host a){long t=System.nanoTime();float[] max=new float[a.c];parallel(a.c,(from,to)->{for(int c=from;c<to;c++)max[c]=a.max(c,c+1);});float m=0x1p-40f;for(float v:max)m=Math.max(m,v);maxPassNanos+=System.nanoTime()-t;return Math.scalb(1.f,StrictCorrection.activationExponent(Float.floatToRawIntBits(m)));}
+    float globalScale(Host a){long t=System.nanoTime();float[] max=new float[a.c];parallel(a.c,(from,to)->{for(int c=from;c<to;c++)max[c]=a.max(c,c+1);});float m=0x1p-40f;for(float v:max)m=Math.max(m,v);maxPassNanos+=System.nanoTime()-t;return Math.scalb(1.f,ExactArithmetic.exponent(Float.floatToRawIntBits(m)));}
     @Override void allocateHistory(){
         // Host-backed layers deliberately trade system memory for VRAM. Reject
         // obviously undersized heaps before allocating multi-gigabyte tensors.
@@ -99,7 +99,7 @@ public strictfp final class FiARCTiledGPU extends FiARCStrictGPU {
             codec.checkCancelled();int oh=Math.min(tile,hh-y),ow=Math.min(tile,ww-x),y0=ay[y*4],y1=ay[(y+oh-1)*4+1],x0=ax[x*4],x1=ax[(x+ow-1)*4+1],ih=y1-y0+1,iw=x1-x0+1;
             gather(a,y0,x0,ih,iw);outputCapacity(a.c*oh*ow);int[] axes=new int[(oh+ow)*4];for(int j=0;j<oh;j++){System.arraycopy(ay,(y+j)*4,axes,j*4,4);axes[j*4]-=y0;axes[j*4+1]-=y0;}for(int j=0;j<ow;j++){System.arraycopy(ax,(x+j)*4,axes,(oh+j)*4,4);axes[(oh+j)*4]-=x0;axes[(oh+j)*4+1]-=x0;}
             long bytes=(long)axes.length*4;if(bytes>axesBytes){if(tileAxes!=null)clReleaseMemObject(tileAxes);tileAxes=create(bytes,null);axesBytes=bytes;}ok(clEnqueueWriteBuffer(queue,tileAxes,CL_TRUE,0,bytes,Pointer.to(axes),0,null,null));
-            launch("portable_up",a.c*oh*ow,tileInput,tileOutput,tileAxes,a.c,ih,iw,oh,ow,!codec.cli?-1:hh==2*a.h&&ww==2*a.w?1:0);
+            launch("portable_up",a.c*oh*ow,tileInput,tileOutput,tileAxes,a.c,ih,iw,oh,ow,hh==2*a.h&&ww==2*a.w?1:0);
             ok(clEnqueueReadBuffer(queue,tileOutput,CL_TRUE,0,(long)a.c*oh*ow*4,Pointer.to(outputHost),0,null,null));final int yy=y,xx=x;parallel(a.c,(from,to)->{FloatBuffer view=outputHost.asFloatBuffer();for(int c=from;c<to;c++)for(int row=0;row<oh;row++){view.position((c*oh+row)*ow);view.get(result,(c*hh+yy+row)*ww+xx,ow);}});
         }return new Dense(result,a.c,hh,ww);
     }

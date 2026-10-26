@@ -82,7 +82,7 @@ class CPUSequenceDecoder:
             self.stream.append(data);self.state.append(state);at+=length
         if nb:
             if magic==b'SRANSG02':
-                from ficompress.seed_bypass_codec import decode
+                from xero._primitives.seed_bypass_codec import decode
                 raw=decode(packet[at:],nb)
             else:raw=zstd.ZstdDecompressor().decompress(packet[at:],max_output_size=nb*2)
         else:raw=b''

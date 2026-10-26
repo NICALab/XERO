@@ -10,7 +10,7 @@
     "violations": 0
   },
   "tests": {
-    "passed": 7,
+    "passed": 8,
     "cuda_opt_in": true,
     "coverage": [
       "signed/zero/tiny values",
@@ -18,16 +18,20 @@
       "restart seek",
       "corruption rejection",
       "overwrite rejection",
-      "disjoint data splits"
+      "disjoint data splits",
+      "downloadable ImageJ archive integrity"
     ]
   },
   "imagej": {
-    "jar_sha256": "20c5aa184d2d89d790b2887459aa0394bf0c9f352680e51e86a751e264790510",
-    "bytes": 1892722,
+    "jar_sha256": "6f4d0725d822e21c43a43f430e8b9e1340e43bad0ecd36e83ace2ca667b032ad",
+    "bytes": 1476668,
     "selfchecks": {
-      "cpu": "PASS \u2014 bit-exact strict v2 restart/seek test\nOS: Linux / amd64\nJava: 21.0.12.1\nBackend: Java CPU\nTile size: 0\nSHA-256: e12a8807622091752bf0409898dace5bb8ed9c810a77ec5bb286a84a722dbd7e\nPASS \u2014 current CLI 49\u00d761 / 1% synthetic native-reference check\nCLI SHA-256: 4903d58e2d0f4bb22f9e3f75a5cdc965d79c2ae7fb05502149329d0f6127f095\nElapsed (not an FPS benchmark): 2.81 s\n",
-      "gpu": "PASS \u2014 bit-exact strict v2 restart/seek test\nOS: Linux / amd64\nJava: 21.0.12.1\nBackend: NVIDIA GeForce RTX 5090\nTile size: 0\nSHA-256: e12a8807622091752bf0409898dace5bb8ed9c810a77ec5bb286a84a722dbd7e\nPASS \u2014 current CLI 49\u00d761 / 1% synthetic native-reference check\nCLI SHA-256: 4903d58e2d0f4bb22f9e3f75a5cdc965d79c2ae7fb05502149329d0f6127f095\nElapsed (not an FPS benchmark): 0.51 s\n"
-    }
+      "cpu": "PASS \u2014 XERO 49\u00d761 / 1% synthetic reference check\nOS: Linux / amd64\nJava: 21.0.12.1\nBackend: Java CPU\nTile size: 0\nSHA-256: 4903d58e2d0f4bb22f9e3f75a5cdc965d79c2ae7fb05502149329d0f6127f095\nElapsed (not an FPS benchmark): 1.35 s\n",
+      "gpu": "PASS \u2014 XERO 49\u00d761 / 1% synthetic reference check\nOS: Linux / amd64\nJava: 21.0.12.1\nBackend: NVIDIA GeForce RTX 5090\nTile size: 0\nSHA-256: 4903d58e2d0f4bb22f9e3f75a5cdc965d79c2ae7fb05502149329d0f6127f095\nElapsed (not an FPS benchmark): 1.87 s\n",
+      "gpu_tiled": "PASS \u2014 XERO 49\u00d761 / 1% synthetic reference check\nOS: Linux / amd64\nJava: 21.0.12.1\nBackend: NVIDIA GeForce RTX 5090\nTile size: 32\nSHA-256: 4903d58e2d0f4bb22f9e3f75a5cdc965d79c2ae7fb05502149329d0f6127f095\nElapsed (not an FPS benchmark): 1.02 s\n"
+    },
+    "example_full_and_restart_seek_bit_exact": true,
+    "tested_runtime_classes_identical_to_distributed_jar": true
   },
   "environment": {
     "python": "3.12.13",
@@ -41,5 +45,11 @@
     "Untrained degenerate checkpoint can fail audit; no manifest is emitted.",
     "Windows/macOS ImageJ runtime qualification not executed in this local release.",
     "No universal device/driver or hostile-file security guarantee."
-  ]
+  ],
+  "cleanup_equivalence": {
+    "model_bytes_identical": true,
+    "packet_bytes_identical": true,
+    "verified_pixels": 655360,
+    "violations": 0
+  }
 }

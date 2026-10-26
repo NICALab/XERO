@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from integer_ptq_screen import build_causal,convert,IntConv,CanonicalActivation
 from canonical_entropy import exp_table
-from ficompress.models.causal_pixel_predictor import CausalPixelPredictor
+from xero._primitives.models.causal_pixel_predictor import CausalPixelPredictor
 from seeded_spatial_codec import SeededSpatialCodec
 PROFILE='fiarc_integer_experimental_v1'
 BOUND_PROFILE='fiarc_integer_boundscale_v2'

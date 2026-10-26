@@ -11,9 +11,9 @@ from history_policy import state_policy,advance
 from training_stability import learning_rate,distortion
 from seeded_spatial_codec import SeededSpatialCodec
 from sequence_codec import prepare_frame,encode_group,GroupDecoder
-from ficompress.models.causal_pixel_predictor import CausalPixelPredictor
-from ficompress.models.chunk_forecast import forecast_chunk,corrected_history
-from ficompress.models.grouped_spatial_codec import bounded_symbols
+from xero._primitives.models.causal_pixel_predictor import CausalPixelPredictor
+from xero._primitives.models.chunk_forecast import forecast_chunk,corrected_history
+from xero._primitives.models.grouped_spatial_codec import bounded_symbols
 
 def snapshot(base,codec,mean,std,step,width,opt=None):
     state=dict(format='fiarc_multirecord_teacher_v1',step=step,tolerance=codec.tolerance,

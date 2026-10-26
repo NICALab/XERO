@@ -1,0 +1,13 @@
+{
+  "file": "XERO_demo.zip",
+  "bytes": 461157,
+  "sha256": "0f36ac9b79c0874ea5518fe3761a4c4dab8b5752a6a3bda99708784404ced8aa",
+  "content": "synthetic fluorescence-like movie",
+  "shape_tyx": [160, 64, 64],
+  "tolerance": 0.01,
+  "restart": 128,
+  "decoded_float32_little_endian_sha256": "08a9b5b8602db357d94602e889f3c924b7a060bf2ab056aa29259bcae1e4108e",
+  "verified": ["CUDA", "ImageJ Java CPU", "ImageJ OpenCL RTX 5090"],
+  "license": "MIT",
+  "note": "Installation example, not biological data or a compression benchmark."
+}

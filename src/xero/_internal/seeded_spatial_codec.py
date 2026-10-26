@@ -8,8 +8,8 @@ import math
 import torch
 from torch import nn
 from torch.nn import functional as F
-from ficompress.models.grouped_spatial_codec import bounded_symbols,restore_symbols,fixed_symbol_surrogate,GroupedSpatialCodec,STEP,ESCAPE
-from ficompress.models.cell_seed_locations import cellify,uncellify,location_rate
+from xero._primitives.models.grouped_spatial_codec import bounded_symbols,restore_symbols,fixed_symbol_surrogate,GroupedSpatialCodec,STEP,ESCAPE
+from xero._primitives.models.cell_seed_locations import cellify,uncellify,location_rate
 
 
 def block(a,b):
@@ -87,13 +87,13 @@ class SeededSpatialCodec(nn.Module):
             self.prior[-1].bias[0]=math.log(initial_mask_probability/(1-initial_mask_probability))
             self.prior[-1].bias[1:].copy_(torch.tensor([.002,.006,.03,.922,.03,.006,.002,.002]).log())
         self.refiner=SeedRefiner(width,4 if lattice_context else 3)
-        # Appended after existing child modules: legacy optimizer parameter order
+        # Keep child-module ordering stable for optimizer checkpoints.
         # remains an exact prefix. Zero initialization preserves every proposal.
         if cell_position_bias:
             self.position_offsets=nn.Embedding(1,16)
             nn.init.zeros_(self.position_offsets.weight)
         self.conditional_final_entropy=conditional_final_entropy
-        # Append a child module, not a root Parameter: legacy optimizer names
+        # Use a child module to preserve optimizer parameter ordering.
         # and moments remain an exact prefix when this table is introduced.
         if conditional_final_entropy:
             self.final_entropy=nn.Embedding(46,8)
@@ -169,7 +169,7 @@ class SeededSpatialCodec(nn.Module):
         return post,out[:,1:].permute(0,2,3,1).unsqueeze(1).contiguous()
 
     def refine_from_even(self,post,even_reconstruction,mask):
-        from ficompress.even_correction_refinement import refine_from_even
+        from xero._primitives.even_correction_refinement import refine_from_even
         weights=self.even_filter.weight[0] if self.learn_even_refinement else self.even_refinement_weights
         return refine_from_even(post,even_reconstruction,mask,self.even_refinement_gain,weights)
 
@@ -199,7 +199,7 @@ class SeededSpatialCodec(nn.Module):
             elif mode=='learned' and self.selection=='cell':mask_rate=location_rate(mask,self.location_logits(pred,mean,std),self.location_coder)
             else:mask_rate=(mask*costs[...,4]+(1-mask)*costs[...,3]).mean() if mode=='learned' else pred.new_zeros(())
             if self.conditional_seed_entropy:
-                from ficompress.checkerboard_entropy import checkerboard_context,labels
+                from xero._primitives.checkerboard_entropy import checkerboard_context,labels
                 stride=self.grid_stride
                 low_mask=mask[...,::stride,::stride]
                 low_q=seed_q[...,::stride,::stride]
@@ -226,7 +226,7 @@ class SeededSpatialCodec(nn.Module):
                 seed_rate=seed_rate+rate_mean((self.grid(pred).float()-mask)*zero_cost)
             rate_logits=final_logits
             if self.conditional_final_entropy:
-                from ficompress.checkerboard_entropy import checkerboard_context,labels
+                from xero._primitives.checkerboard_entropy import checkerboard_context,labels
                 # Odd sites see only decoded even symbols; even sites use a
                 # constant context. Integer context decisions are detached, not
                 # a differentiable promise about neighboring quantizer bins.

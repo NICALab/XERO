@@ -18,7 +18,7 @@ def manifest(folder):
     folder = Path(folder)
     m = json.loads((folder/'manifest.json').read_text())
     if m.get('profile') not in ('fiarc_integer_experimental_v1','fiarc_integer_boundscale_v2'):
-        raise ValueError('Unsupported profile; use ImageJ/browser for legacy strict-v2 archives')
+        raise ValueError('Unsupported XERO archive profile')
     n,h,w = m['shape']; k = m['restart']
     if any(type(v) is not int or v<1 for v in (n,h,w,k)) or min(h,w)<4 or k<128 or k&(k-1):
         raise ValueError('Invalid geometry/restart')

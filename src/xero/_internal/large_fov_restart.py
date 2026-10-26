@@ -3,10 +3,10 @@ import numpy as np
 import torch
 import triton
 import triton.language as tl
-from historical_matched import IndependentReader
+from independent_reader import IndependentReader
 from integer_codec_speed import IntegerRuntime,RECORD
 import sequence_codec
-import ficompress.seed_sequence_rans as rans
+import xero._primitives.seed_sequence_rans as rans
 
 @triton.jit
 def shift_history(H,R,P:tl.constexpr,C:tl.constexpr,B:tl.constexpr):

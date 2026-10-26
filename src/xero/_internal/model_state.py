@@ -1,6 +1,6 @@
-"""Causal checkpoint adapter; historical format IDs retain compatibility."""
+"""Load and validate causal XERO checkpoints."""
 from history_policy import with_policy, state_policy
-from ficompress.models.causal_pixel_predictor import CausalPixelPredictor
+from xero._primitives.models.causal_pixel_predictor import CausalPixelPredictor
 from seeded_spatial_codec import SeededSpatialCodec
 
 

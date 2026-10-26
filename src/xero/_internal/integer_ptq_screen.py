@@ -86,10 +86,9 @@ def convert(m,bits,weight_bits=None):
 
 
 def conditioning_tolerance(codec):
-    """New checkpoints use their trained bound; legacy readers pin old 1% math.
+    """Feature conditioning selected by the serialized model profile.
 
-    This is feature conditioning, NOT the final correction tolerance. The
-    serialized model profile must select the rule; never reinterpret old bytes.
+    This scale is separate from the final correction tolerance.
     """
     value=float(np.float32(getattr(codec,'_conditioning_tolerance',codec.tolerance)))
     if not math.isfinite(value) or not 0<value<1:raise ValueError('Invalid conditioning tolerance')

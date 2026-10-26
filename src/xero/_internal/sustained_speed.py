@@ -3,44 +3,23 @@ import torch
 from speed_probe import Sink, RECORD
 from model_state import model_profile,build_causal
 from sequence_codec import prepare_frame,encode_group,GroupDecoder
-from ficompress.models.chunk_forecast import forecast_chunk
+from xero._primitives.models.chunk_forecast import forecast_chunk
 from history_policy import advance
 
 class Runtime:
     """Decoder core: accepts serialized weights, geometry and bytes only."""
-    def __init__(self, state, shape, compile_model,context_input_profile='canonical_v1'):
+    def __init__(self, state, shape, compile_model):
         self.state, self.shape = state, tuple(shape)
         self.profile=model_profile(state)
-        self.contextual=self.profile=='contextual_future'
-        if context_input_profile not in ('canonical_v1','legacy_v0'):raise ValueError('Unknown context input implementation')
-        self.context_input_profile=context_input_profile if self.contextual else None
-        self.future = self.profile in ('direct_future','hierarchical_future')
-        self.gap=state['context_future']['gap'] if self.contextual else state['bidirectional']['gap'] if self.future else 1
-        if self.contextual:
-            from contextual_future import build as build_contextual
-            self.base,self.codec=build_contextual(state,'cuda');self.interp=None
-        elif self.future:
-            self.base, self.codec, self.interp = build(state, 'cuda')
-        else:
-            self.base, self.codec = build_causal(state, 'cuda'); self.interp = None
+        self.gap=1
+        self.base, self.codec = build_causal(state, 'cuda')
         self.mean, self.std = state['base']['mean'], state['base']['std']
-        if self.contextual and context_input_profile=='canonical_v1':
-            from canonical_context_runtime import CanonicalContextRuntime
-            self.base=CanonicalContextRuntime(self.base,compile_model)
-        elif compile_model:self.base=torch.compile(self.base)
+        if compile_model:self.base=torch.compile(self.base)
         if compile_model:
-            if self.future: self.interp = torch.compile(self.interp)
             for name in ('select','prior_logits','refine','refine_from_even'):
                 setattr(self.codec, name, torch.compile(getattr(self.codec,name)))
 
     def stream(self, n):
-        if self.contextual:
-            from contextual_future import predictions as contextual_predictions
-            return contextual_predictions(self.base,self.mean,self.std,n,self.shape,self.gap,'cuda')
-        if self.future:
-            spec = self.state['bidirectional']
-            return predictions(self.base,self.interp,self.mean,self.std,n,self.shape,
-                spec['gap'],'cuda',spec.get('topology','direct'))
         def causal():
             hist = torch.full((1,self.base.history,*self.shape),self.mean,device='cuda')
             for i in range(n):
@@ -49,9 +28,6 @@ class Runtime:
                 rec = yield i,pred
                 hist = advance(hist,rec,i==0,'repeat_first_decoded')
         return causal()
-
-    def precision(self,index,n):
-        if self.future: frame_precision(self.codec,self.state,index,n)
 
     def decoded_frames(self,packets,n):
         """No original/source/encoder tensors or provenance may enter this API."""
@@ -64,7 +40,7 @@ class Runtime:
                 raise ValueError('Corrupt packet geometry')
             for _ in range(reader.frames):
                 if k>=n: raise ValueError('Extra frames')
-                index,pred = pair; self.precision(index,n)
+                index,pred = pair
                 rec = reader.decode_frame(self.codec,pred,self.mean,self.std)
                 yield index,rec
                 k += 1
@@ -80,7 +56,7 @@ class Runtime:
         try:
             gen=self.stream(n); pair=next(gen)
             for k in range(n):
-                index,pred=pair; self.precision(index,n)
+                index,pred=pair
                 item,rec=prepare_frame(self.codec,source[index%len(source)][None,None],pred,self.mean,self.std)
                 if observer is not None:observer(index,rec)
                 pending.append(item)

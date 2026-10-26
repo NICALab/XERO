@@ -16,7 +16,7 @@ The source is never available to the receiver. Prediction is sequential in the a
 
 ## Learning
 
-The released trainer preserves the campaign's seed/final-symbol rate objective, detached seed-conditioning surrogate, corrected-history rollout and auxiliary tolerance-scaled Huber terms:
+Training combines a seed/final-symbol rate objective, detached seed-conditioning surrogate, corrected-history rollout and auxiliary tolerance-scaled Huber terms:
 
 ```text
 rate(seed symbols + final symbols + escapes)
@@ -36,9 +36,7 @@ When input is denoised, this certifies **compression relative to denoised input*
 
 ## Compatibility
 
-Public UI names are XERO. Internal `fiarc_*` profile identifiers, packet magic and `ficompress` imports retain byte compatibility with existing research archives. Changing labels in a manifest does not convert a numerical profile.
-
-The CLI export is causal only. Unsupported future/contextual model families are rejected. Historical strict-v2 files are readable through the ImageJ/browser receivers, not the new CLI archive wrapper. Endpoints should be tested against independent reference pixels before a new platform is declared qualified.
+The CLI export supports causal models. Unsupported future/contextual model families are rejected. Test a new decoding platform against independent reference pixels using the ImageJ compatibility check.
 
 ## Trust
 

@@ -88,35 +88,30 @@ public strictfp class FiARCCodec implements AutoCloseable {
     static class Tensor {final float[] a;final Object device;final int c,h,w;Tensor(float[] a,int c,int h,int w){this(a,null,c,h,w);}Tensor(float[] a,Object device,int c,int h,int w){this.a=a;this.device=device;this.c=c;this.h=h;this.w=w;require(a==null||a.length==c*h*w,"Tensor shape");}}
     final Path folder;final JsonObject manifest,meta,codec;final Map<String,Layer> layers=new LinkedHashMap<>();final Conv engine;
     public final int frames,h,w,restart,history;final int[] lut,exp;final float[] seedOffsets,finalOffsets,evenWeights;final float mean,std,inv,gain;final double seedStep,finalStep;final boolean lattice;final int stride;
-    final StrictCorrection correction;
-    final boolean cli;final float conditioningTolerance;final double[] seedFactors,finalFactors;
+    final float conditioningTolerance;final double[] seedFactors,finalFactors;
     float[] hist;int age=0;public int packetsRead=0,prefixFrames=0;
     public long coreNanos=0;public int processedFrames=0;
     final Map<String,byte[]> packetCache=new LinkedHashMap<>();
     public void preloadPackets()throws Exception {packetCache.clear();long bytes=0;for(JsonElement e:manifest.getAsJsonArray("groups")){JsonObject g=e.getAsJsonObject();if(bytes+g.get("bytes").getAsLong()>64L*1024*1024)break;String name=g.get("file").getAsString();byte[] b=checked(folder,name,g.get("sha256").getAsString());require(b.length==g.get("bytes").getAsInt(),"Packet bytes");packetCache.put(name,b);bytes+=b.length;}}
     public FiARCCodec(Path archive,Conv engine) throws Exception {
         this.engine=engine;folder=archive.toRealPath();manifest=json(Files.readAllBytes(folder.resolve("manifest.json")));
-        String profile=manifest.get("profile").getAsString();cli=profile.equals("fiarc_integer_experimental_v1")||profile.equals("fiarc_integer_boundscale_v2");
-        require(cli||profile.equals("fiarc_strict_graph_DEVELOPMENT_v2"),"Unsupported archive profile");
+        String profile=manifest.get("profile").getAsString();
+        require(profile.equals("fiarc_integer_experimental_v1")||profile.equals("fiarc_integer_boundscale_v2"),"Unsupported XERO archive profile");
         JsonArray shape=manifest.getAsJsonArray("shape");frames=shape.get(0).getAsInt();h=shape.get(1).getAsInt();w=shape.get(2).getAsInt();restart=manifest.get("restart").getAsInt();
-        require(frames>0&&h>=4&&w>=4&&h<=4096&&w<=4096&&(cli||(h%4==0&&w%4==0))&&restart>=128&&(restart&(restart-1))==0,"Unsupported geometry/restart");
-        JsonObject hashes=manifest.getAsJsonObject("sha256");
-        correction=cli?null:new StrictCorrection(checked(folder,"correction.bin",hashes.get("correction.bin").getAsString()));
-        Map<String,Npy> a=npz(checked(folder,manifest.get("model").getAsString(),cli?manifest.get("model_sha256").getAsString():hashes.get("model.npz").getAsString()));meta=json(a.get("metadata").raw);codec=meta.getAsJsonObject("codec");JsonObject base=meta.getAsJsonObject("base");
-        require(meta.get("profile").getAsString().equals(cli?profile:"fiarc_integer_experimental_v1"),"Unsupported model profile");
+        require(frames>0&&h>=4&&w>=4&&h<=4096&&w<=4096&&restart>=128&&(restart&(restart-1))==0,"Unsupported geometry/restart");
+        Map<String,Npy> a=npz(checked(folder,manifest.get("model").getAsString(),manifest.get("model_sha256").getAsString()));meta=json(a.get("metadata").raw);codec=meta.getAsJsonObject("codec");JsonObject base=meta.getAsJsonObject("base");
+        require(meta.get("profile").getAsString().equals(profile),"Unsupported model profile");
         require(meta.get("bits").getAsInt()==13&&meta.get("weight_bits").getAsInt()==8,"Only A13/W8 supported");
         require(base.get("input_mode").getAsString().equals("relative_latest")&&codec.get("conditioning").getAsString().equals("relative"),"Unsupported conditioning");
         require(!base.has("interpolate")||!base.get("interpolate").getAsBoolean(),"Interpolation model not supported");
         require(codec.get("conditional_seed_entropy").getAsBoolean()&&codec.get("conditional_final_entropy").getAsBoolean(),"Unsupported entropy topology");
         history=base.get("history").getAsInt();require(history>0&&history<=256,"History limit");mean=base.get("mean").getAsFloat();std=base.get("std").getAsFloat();require(std>0&&Float.isFinite(std)&&Float.isFinite(mean),"Normalization");inv=1.f/std;
-        require(cli||(restart==128&&history==64&&base.get("width").getAsInt()==32&&codec.get("width").getAsInt()==16),"Unsupported strict_v2 architecture");
-        require(cli||(codec.get("tolerance").getAsDouble()==.01&&codec.get("seed_tolerance").getAsDouble()==.01),"Unqualified strict_v2 error bound");
         require(codec.get("tolerance").getAsDouble()>0&&codec.get("tolerance").getAsDouble()<=.5,"Invalid error bound");
-        if(cli)require(manifest.get("history").getAsString().equals("repeat_first_decoded"),"Unsupported initial history");
+        require(manifest.get("history").getAsString().equals("repeat_first_decoded"),"Unsupported initial history");
         conditioningTolerance=profile.equals("fiarc_integer_boundscale_v2")?codec.get("tolerance").getAsFloat():.01f;
         stride=codec.get("grid_stride").getAsInt();require(stride==2,"Seed stride must be 2");lattice=codec.get("lattice_context").getAsBoolean();gain=codec.get("even_refinement_gain").getAsFloat();
         seedStep=2*StrictMath.log1p(codec.get("seed_tolerance").getAsDouble()*.9999);finalStep=2*StrictMath.log1p(codec.get("tolerance").getAsDouble()*.9999);
-        seedFactors=cli?factors(seedStep):null;finalFactors=cli?(seedStep==finalStep?seedFactors:factors(finalStep)):null;
+        seedFactors=factors(seedStep);finalFactors=seedStep==finalStep?seedFactors:factors(finalStep);
         require(codec.get("tolerance").getAsDouble()==manifest.get("tolerance").getAsDouble(),"Tolerance/model mismatch");
         lut=a.get("silu_table").ints();exp=a.get("exp_table").ints();seedOffsets=a.get("seed_entropy").floats();finalOffsets=a.get("final_entropy").floats();evenWeights=a.containsKey("even_filter")?a.get("even_filter").floats():new float[]{.25f,.25f,.25f,.25f};
         require(lut.length==131073&&exp.length==257&&seedOffsets.length==368&&finalOffsets.length==368&&evenWeights.length==4,"Table sizes");
@@ -129,7 +124,7 @@ public strictfp class FiARCCodec implements AutoCloseable {
         checkCancelled();
         if(engine instanceof Graph){Layer l=layers.get(name);require(l!=null&&x.c==l.ci,"Layer mismatch");return ((Graph)engine).convolution(x,l,act,lut);}
         Layer l=layers.get(name);require(l!=null&&x.c==l.ci,"Unknown or mismatched layer "+name);float max=Math.scalb(1.f,-40);for(float v:x.a){require(Float.isFinite(v),"Nonfinite feature");max=Math.max(max,Math.abs(v));}
-        double scale=Math.scalb(1.,StrictCorrection.activationExponent(Float.floatToRawIntBits(max)));
+        double scale=Math.scalb(1.,ExactArithmetic.exponent(Float.floatToRawIntBits(max)));
         int[] q=new int[x.a.length];for(int i=0;i<q.length;i++){q[i]=(int)Math.rint(x.a[i]/scale);require(Math.abs(q[i])<=4095,"A13 overflow");}
         int[] dot=engine.dot(q,l,x.h,x.w);float[] out=new float[dot.length];int n=x.h*x.w;
         for(int c=0;c<l.co;c++){double cs=Math.scalb(scale,l.exponents[c]);for(int i=c*n;i<(c+1)*n;i++){float v=(float)(dot[i]*cs+(double)l.bias[c]);if(act==1){if(v<=-16.f)v=0;else if(v<16.f)v=lut[(int)Math.rint(v*4096.f)+65536]/4096.f;}else if(act==2&&v<=0)v=v*.1f;if(act!=0)v=(float)Math.rint(v*4096.f)/4096.f;out[i]=v;}}
@@ -137,8 +132,7 @@ public strictfp class FiARCCodec implements AutoCloseable {
     }
     Tensor block(String name,Tensor x,int act){return conv(name+".2",conv(name+".0",x,act),act);}
     Tensor pool(Tensor x){if(engine instanceof Graph)return ((Graph)engine).pool(x);int h=x.h/2,w=x.w/2;float[] a=new float[x.c*h*w];for(int c=0;c<x.c;c++)for(int y=0;y<h;y++)for(int z=0;z<w;z++){int i=c*x.h*x.w+2*y*x.w+2*z;a[c*h*w+y*w+z]=((x.a[i]+x.a[i+1])+x.a[i+x.w]+x.a[i+x.w+1])*.25f;}return new Tensor(a,x.c,h,w);}
-    Tensor up(Tensor x,Tensor target){if(cli){if(engine instanceof Graph)return ((Graph)engine).resize(x,target.h,target.w);return new Tensor(PortableResize.resize(x.a,x.c,x.h,x.w,target.h,target.w),x.c,target.h,target.w);}return up(x);}
-    Tensor up(Tensor x){if(engine instanceof Graph)return ((Graph)engine).up(x);int h=x.h*2,w=x.w*2;float[] a=new float[x.c*h*w];for(int c=0;c<x.c;c++)for(int y=0;y<h;y++)for(int z=0;z<w;z++){int y0=y>0?(y-1)/2:0,x0=z>0?(z-1)/2:0,y1=Math.min(y0+1,x.h-1),x1=Math.min(x0+1,x.w-1),off=c*x.h*x.w;float dy=y>0?((y&1)>0?.25f:.75f):0,dx=z>0?((z&1)>0?.25f:.75f):0;float aa=(1.f-dx)*x.a[off+y0*x.w+x0]+dx*x.a[off+y0*x.w+x1],bb=(1.f-dx)*x.a[off+y1*x.w+x0]+dx*x.a[off+y1*x.w+x1];a[c*h*w+y*w+z]=(1.f-dy)*aa+dy*bb;}return new Tensor(a,x.c,h,w);}
+    Tensor up(Tensor x,Tensor target){if(engine instanceof Graph)return ((Graph)engine).resize(x,target.h,target.w);return new Tensor(PortableResize.resize(x.a,x.c,x.h,x.w,target.h,target.w),x.c,target.h,target.w);}
     Tensor cat(Tensor a,Tensor b){if(engine instanceof Graph)return ((Graph)engine).cat(a,b);require(a.h==b.h&&a.w==b.w,"Concat geometry");float[] out=Arrays.copyOf(a.a,a.a.length+b.a.length);System.arraycopy(b.a,0,out,a.a.length,b.a.length);return new Tensor(out,a.c+b.c,a.h,a.w);}
     float[] normalize(float[] x){float[] a=new float[x.length];for(int i=0;i<a.length;i++)a[i]=(x[i]-mean)*inv;return a;}
     float[] forecast(){int n=h*w;if(age==0){float[] a=new float[n];Arrays.fill(a,mean);return a;}Tensor input;float[] last;
@@ -152,7 +146,7 @@ public strictfp class FiARCCodec implements AutoCloseable {
     static int ctx(short[] q,int h,int w,int i){int y=i/w,x=i%w,n=0,v=0;int[] k={y>0?label(q[i-w]):3,y+1<h?label(q[i+w]):3,x>0?label(q[i-1]):3,x+1<w?label(q[i+1]):3};for(int a:k){if(a!=3)n++;if(a>=4&&a<=6)v++;if(a<=2)v--;}return n*9+v+4;}
     int[] cdf(float[] logits,float[] offsets,int[] ix,short[] q,int h,int w,int odd,short[] mask){int[] out=new int[ix.length*9];int[] v=new int[8];long[] weight=new long[8];for(int j=0;j<ix.length;j++){int i=ix[j],at=j*9;if(mask!=null&&mask[i]!=0){for(int k=4;k<9;k++)out[at+k]=4096;continue;}int context=odd!=0?ctx(q,h,w,i):45,mx=Integer.MIN_VALUE,best=0;for(int k=0;k<8;k++){v[k]=(int)Math.rint((logits[8*i+k]+offsets[context*8+k])*16.f);if(v[k]>mx){mx=v[k];best=k;}}long sum=0;for(int k=0;k<8;k++){weight[k]=exp[Math.min(256,mx-v[k])];sum+=weight[k];}int total=0;int[] freq=new int[8];for(int k=0;k<8;k++){freq[k]=(int)(weight[k]*4088/sum)+1;total+=freq[k];}freq[best]+=4096-total;for(int k=0;k<8;k++)out[at+k+1]=out[at+k]+freq[k];}return out;}
     static double[] factors(double step){double[] a=new double[65535];for(int q=-32767;q<=32767;q++)a[q+32767]=Math.exp(q*step);return a;}
-    float[] restore(float[] p,short[] q,float[] esc,double step){float[] out=new float[p.length];int j=0;double[] factors=step==seedStep?seedFactors:finalFactors;for(int i=0;i<p.length;i++){if(q[i]==ESC){require(j<esc.length,"Escape exhaustion");out[i]=esc[j++];}else if(cli)out[i]=q[i]==0?p[i]:(float)((p[i]==0?1.:(double)p[i])*factors[q[i]+32767]);else out[i]=Float.intBitsToFloat(correction.restore(Float.floatToRawIntBits(p[i]),q[i]));require(Float.isFinite(out[i]),"Nonfinite reconstruction");}require(j==esc.length,"Unused escapes");return out;}
+    float[] restore(float[] p,short[] q,float[] esc,double step){float[] out=new float[p.length];int j=0;double[] factors=step==seedStep?seedFactors:finalFactors;for(int i=0;i<p.length;i++){if(q[i]==ESC){require(j<esc.length,"Escape exhaustion");out[i]=esc[j++];}else out[i]=q[i]==0?p[i]:(float)((p[i]==0?1.:(double)p[i])*factors[q[i]+32767]);require(Float.isFinite(out[i]),"Nonfinite reconstruction");}require(j==esc.length,"Unused escapes");return out;}
     float[] decode(Packet group,float[] pred){int n=h*w,lh=(h+1)/2,lw=(w+1)/2;if(engine instanceof Graph)((Graph)engine).begin();float[] prior=host(conv("prior.2",conv("prior.0",new Tensor(normalize(pred),1,h,w),1),0));float[] ll=new float[lh*lw*8];for(int y=0;y<lh;y++)for(int x=0;x<lw;x++)for(int k=0;k<8;k++)ll[(y*lw+x)*8+k]=prior[(k+1)*n+y*2*w+x*2];short[] low=new short[lh*lw],sq=new short[n];for(int odd=0;odd<2;odd++){int[] ix=sites(lh,lw,odd);short[] v=group.phases[odd].decode(cdf(ll,seedOffsets,ix,low,lh,lw,odd,null));for(int j=0;j<ix.length;j++)low[ix[j]]=v[j];}
         float[] small=new float[low.length];for(int y=0;y<lh;y++)for(int x=0;x<lw;x++){int i=y*2*w+x*2;sq[i]=low[y*lw+x];small[y*lw+x]=pred[i];}
         float[] restored=restore(small,low,group.take(low,0),seedStep),seed=pred.clone();boolean[] mask=new boolean[n];for(int i=0;i<n;i++)mask[i]=sq[i]!=0;for(int y=0;y<lh;y++)for(int x=0;x<lw;x++)seed[y*2*w+x*2]=restored[y*lw+x];

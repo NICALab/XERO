@@ -3,11 +3,11 @@ import struct
 import numpy as np
 import torch
 import zstandard as zstd
-from ficompress.bounded_quantizer_cuda import bounded_symbols
-from ficompress.models.grouped_spatial_codec import restore_symbols,ESCAPE
-from ficompress.checkerboard_entropy import adjusted_logits,even_indices,odd_indices
-from ficompress.seed_rans_gpu import cdf_tensor
-from ficompress.seed_sequence_rans import encode_sequence,SequenceDecoder
+from xero._primitives.bounded_quantizer_cuda import bounded_symbols
+from xero._primitives.models.grouped_spatial_codec import restore_symbols,ESCAPE
+from xero._primitives.checkerboard_entropy import adjusted_logits,even_indices,odd_indices
+from xero._primitives.seed_rans_gpu import cdf_tensor
+from xero._primitives.seed_sequence_rans import encode_sequence,SequenceDecoder
 
 HEADER=struct.Struct('<8sIII6Q');MAGIC=b'FSEEDSG1'
 

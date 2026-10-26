@@ -3,14 +3,13 @@ import torch
 
 V1='fiarc_multirecord_teacher_v1'
 V2='fiarc_multirecord_teacher_v2'
-LEGACY_AHRENS='ahrens_fixed_relative_v1'
 POLICIES=('mean','repeat_first_decoded')
 
 
 def state_policy(state):
     version=state.get('format')
-    if version in (V1,LEGACY_AHRENS):
-        if state.get('history_initialization','mean')!='mean':raise ValueError('V1 requires legacy mean initialization')
+    if version==V1:
+        if state.get('history_initialization','mean')!='mean':raise ValueError('Invalid history initialization for this checkpoint')
         return 'mean'
     if version==V2 and state.get('history_initialization') in POLICIES:return state['history_initialization']
     raise ValueError('Unknown or incomplete outer codec state/profile')

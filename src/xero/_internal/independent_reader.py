@@ -12,7 +12,7 @@ class IndependentReader:
         self.shape=shape;self.restart=128
         self.base,self.codec,spec=load_model(model,'cuda');self.mean,self.std=spec['mean'],spec['std']
         self.forecast=prepare(self.base,self.codec,spec,shape,13)
-        spec=importlib.util.spec_from_file_location('_historical_integer_packet_reader',sequence_codec.__file__)
+        spec=importlib.util.spec_from_file_location('_xero_independent_packet_reader',sequence_codec.__file__)
         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);module.cdf_tensor=fast_canonical_cdf
         self.GroupDecoder=module.GroupDecoder
     def decoded_frames(self,packets,n):

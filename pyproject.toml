@@ -27,7 +27,7 @@ Viewer = "https://xero-viewer.pages.dev/xero/"
 where = ["src"]
 
 [tool.setuptools.package-data]
-ficompress = ["csrc/*.cpp", "csrc/*.cu"]
+"xero._primitives" = ["csrc/*.cpp", "csrc/*.cu"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

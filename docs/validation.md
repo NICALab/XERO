@@ -2,9 +2,7 @@
 
 These are software-correctness checks, not new biological performance measurements.
 
-## Preserving the research implementation
-
-The release was assembled in a separate directory, without editing the active research codec or datasets. Core symbols were extracted with provenance in [`source_provenance.json`](source_provenance.json). Changes to the public wrapper cover configurable I/O, staging, error handling and documentation; historical numerical profiles and packet identifiers were retained.
+## Codec checks
 
 On the artificial 160 × 64 × 64 tutorial sequence:
 
@@ -19,8 +17,8 @@ The supplied tutorial checkpoint was trained for ten steps on artificial data. I
 
 The packaged JAR was rebuilt from the included Java/OpenCL sources and checked on Linux x86_64, OpenJDK 21 and an NVIDIA RTX 5090. Both CPU and OpenCL GPU paths passed:
 
-- Legacy strict-v2 restart/seek fixture against its independent native reference hash.
-- Current CLI 49 × 61 / 1% artificial-data fixture against its independent CUDA reference hash.
+- A 49 × 61 / 1% artificial-data fixture against its independent CUDA reference hash.
+- The downloadable 160-frame example against CUDA-decoded pixels, including a seek across its 128-frame restart.
 
 The JAR contains the compatibility checks so users can repeat them locally. Windows/macOS native bindings are bundled; those operating systems were not executed as part of this local release validation. Browser testing in the research project is a separate qualification record, not evidence that every ImageJ platform has been tested.
 

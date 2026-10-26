@@ -16,7 +16,7 @@ public class FiARC_Standalone_Open implements PlugIn {
             d.addChoice("Compute",new String[]{"Auto (GPU, otherwise CPU)","GPU / OpenCL","CPU"},"Auto (GPU, otherwise CPU)");d.addNumericField("OpenCL GPU index",0,0);
             d.addChoice("GPU workspace",new String[]{"Fast (full frame)","Low VRAM (512-pixel tiles)","Low VRAM (256-pixel tiles)"},"Fast (full frame)");
             d.addCheckbox("Virtual stack (bounded RAM)",true);
-            d.addMessage("Open the folder containing manifest.json and model.npz.\nCurrent CLI/browser integer archives and legacy strict v2 are supported.\nVirtual mode retains at most 128 MiB of recent decoded frames.\nLow VRAM uses system RAM for features/history and is much slower.\nIt uses the same archive; no recompression is needed.\nNo browser or Python required. Escape cancels decoding.");
+            d.addMessage("Select an extracted XERO archive folder.\nVirtual stack keeps recently viewed frames in memory.\nLow VRAM reduces GPU memory use but is slower.\nEscape cancels loading.");
             d.showDialog();if(d.wasCanceled())return;
             Path path=Paths.get(d.getNextString());double a=d.getNextNumber(),b=d.getNextNumber();int first=(int)a,last=(int)b;int compute=d.getNextChoiceIndex();int workspace=d.getNextChoiceIndex();double g=d.getNextNumber();int index=(int)g;boolean virtual=d.getNextBoolean();
             if(!Double.isFinite(a)||!Double.isFinite(b)||!Double.isFinite(g)||a!=first||b!=last||g!=index||index<0||first<1||last<first)throw new IllegalArgumentException("Invalid integer range or GPU index");

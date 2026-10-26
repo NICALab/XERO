@@ -7,12 +7,21 @@ Open compressed images directly in ImageJ. CPU decoding runs in Java; optional G
 ## Install
 
 1. Download `XERO_ImageJ.jar` and copy it into Fiji/ImageJ's `plugins` directory.
-2. Move older XERO/FiARC plugin JARs out of `plugins` (keep backups elsewhere), then restart ImageJ.
-3. Run **Plugins → XERO → Check CPU or GPU compatibility**. Start with CPU, then check GPU if available.
-4. Choose **Plugins → XERO → Open compressed image** and select the local archive folder containing `manifest.json`, `model.npz` and `group_*.bin`.
-5. Use **Auto** compute and **Virtual stack** for interactive viewing. The progress window supports cancellation.
+2. Restart ImageJ, then run **Plugins → XERO → Check CPU or GPU compatibility**. Start with CPU, then check GPU if available.
+3. Choose **Plugins → XERO → Open compressed image** and select the local archive folder containing `manifest.json`, `model.npz` and `group_*.bin`.
+4. Use **Auto** compute and **Virtual stack** for interactive viewing. The progress window supports cancellation.
 
 Frame numbers in ImageJ are **one-based and inclusive**. Python uses zero-based, half-open ranges. The plugin opens local/mounted folders, not arbitrary R2 URLs. For web-hosted data use the [browser viewer](https://xero-viewer.pages.dev/xero/).
+
+## Try a small example
+
+**[Download XERO_demo.zip](examples/XERO_demo.zip?raw=true)** (about 0.46 MB).
+
+1. Unzip the download.
+2. In **Plugins → XERO → Open compressed image**, select the extracted `XERO_demo` folder.
+3. Select frames **1–160** and open the stack. Use ImageJ's brightness/contrast controls and frame slider to explore it.
+
+This is a **synthetic fluorescence-like movie**, 64 × 64 pixels × 160 frames, compressed with a 1% relative-error bound. It is an installation example, not biological data or a compression-performance benchmark. No training, Python installation or additional model download is required. [Example details and reproduction](examples/README.md).
 
 ## Platforms and memory
 
@@ -22,9 +31,9 @@ Virtual loading keeps a bounded output-frame cache and decodes from the precedin
 
 **Fast (full frame)** is the default. Optional **Low VRAM (512/256-pixel tiles)** uses the same files and output arithmetic, but moves intermediate state through system RAM and can be substantially slower. It is a fallback, not a speed optimization, and does not reduce total system RAM use. For 2048² images in this mode, an 8-GiB Java heap and sufficient free RAM are recommended, not guaranteed to fit all models.
 
-## Compatibility
+## Data integrity
 
-The reader accepts `fiarc_integer_experimental_v1`, `fiarc_integer_boundscale_v2`, and legacy `fiarc_strict_graph_DEVELOPMENT_v2`. Historical identifiers and Java class names are retained for compatibility; UI labels are XERO. No retraining/recompression is needed for supported existing archives. The built-in checks compare decoded float32 values with independently generated CUDA reference hashes.
+The built-in compatibility check compares decoded float32 values with independently generated CUDA reference hashes.
 
 Only open trusted archives. Integrity hashes detect corruption, not authenticity; this is research software, not a security-audited parser for hostile inputs.
 

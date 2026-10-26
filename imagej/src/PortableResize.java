@@ -11,11 +11,11 @@ public strictfp final class PortableResize {
         if(aa>=0x7f800000||bb>=0x7f800000||cc>=0x7f800000)return 0x7fc00000;
         if(aa==0||bb==0)return Float.floatToRawIntBits(Float.intBitsToFloat(sign)+Float.intBitsToFloat(c));
         long product=mant(a)*mant(b);int pe=base(a)+base(b);
-        if(cc==0)return StrictCorrection.pack(sign,product,pe);
+        if(cc==0)return ExactArithmetic.pack(sign,product,pe);
         long cm=mant(c);int ce=base(c),top=Math.max(pe+high(product),ce+high(cm));
         long av=jam(product,top-62-pe),bv=jam(cm,top-62-ce),sum;
         if(sign==cs)sum=av+bv;else if(Long.compareUnsigned(av,bv)<0){sum=bv-av;sign=cs;}else sum=av-bv;
-        return sum==0?0:StrictCorrection.pack(sign,sum,top-62);
+        return sum==0?0:ExactArithmetic.pack(sign,sum,top-62);
     }
     static int[] axis(int src,int dst){int[] a=new int[dst*4];float scale=(float)src/dst;for(int j=0;j<dst;j++){
         float v=Math.max(0f,(float)((double)scale*(j+.5f)-.5));int lo=(int)v;float delta=v-lo;

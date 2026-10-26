@@ -7,7 +7,7 @@ from integer_archive import write_model,serialized_profile,PROFILE,BOUND_PROFILE
 from canonical_entropy import fast_canonical_cdf
 from large_fov_restart import MemoryReader,memory_stream,SingleGroupSource,encode_segments,decode_segments,compact_pending_cdfs,memory_order
 from fiarc_stream_order import adapter
-import ficompress.seed_sequence_rans as rans
+import xero._primitives.seed_sequence_rans as rans
 from ram_runtime import PinnedSource,PinnedOutput
 from model_state import export_state
 import sequence_codec, memory_safety

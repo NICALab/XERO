@@ -3,7 +3,7 @@ import org.jocl.*;
 import static org.jocl.CL.*;
 import java.util.*;
 
-/** Causal strict_v2: all prediction, rANS, correction and history stay on GPU. */
+/** All prediction, rANS, correction and recurrent history stay on GPU. */
 public class FiARCStrictGPU extends FiARCOpenCLResident {
     FiARCCodec codec;cl_mem dummy,error,expTable,seedOffsets,finalOffsets,factors,finalFactors,evenWeights;
     final List<cl_mem> persistent=new ArrayList<>(),groupMemory=new ArrayList<>();
@@ -17,8 +17,8 @@ public class FiARCStrictGPU extends FiARCOpenCLResident {
         if(codec!=null){FiARCCodec.require(codec==c,"GPU reused for another codec");return;}codec=c;
         dummy=keep(new int[1],persistent);error=guard;expTable=keep(c.exp,persistent);
         seedOffsets=keep(c.seedOffsets,persistent);finalOffsets=keep(c.finalOffsets,persistent);evenWeights=keep(c.evenWeights,persistent);
-        int[] cf=new int[65535*2];for(int i=0;i<65535;i++){if(c.cli){long bits=Double.doubleToRawLongBits(c.seedFactors[i]);cf[2*i]=(int)bits;cf[2*i+1]=(int)(bits>>>32);}else{cf[2*i]=c.correction.mantissas[i];cf[2*i+1]=c.correction.exponents[i];}}factors=keep(cf,persistent);finalFactors=factors;
-        if(c.cli&&c.seedStep!=c.finalStep){for(int i=0;i<65535;i++){long bits=Double.doubleToRawLongBits(c.finalFactors[i]);cf[2*i]=(int)bits;cf[2*i+1]=(int)(bits>>>32);}finalFactors=keep(cf,persistent);}
+        int[] cf=new int[65535*2];for(int i=0;i<65535;i++){long bits=Double.doubleToRawLongBits(c.seedFactors[i]);cf[2*i]=(int)bits;cf[2*i+1]=(int)(bits>>>32);}factors=keep(cf,persistent);finalFactors=factors;
+        if(c.seedStep!=c.finalStep){for(int i=0;i<65535;i++){long bits=Double.doubleToRawLongBits(c.finalFactors[i]);cf[2*i]=(int)bits;cf[2*i+1]=(int)(bits>>>32);}finalFactors=keep(cf,persistent);}
         histPlane=c.h*c.w;histCount=c.history;allocateHistory();
     }
     void allocateHistory(){histA=create((long)histPlane*histCount*4,null);}
@@ -39,12 +39,12 @@ public class FiARCStrictGPU extends FiARCOpenCLResident {
         int n=histPlane,count=mode==8?n*histCount:n,size=mode==3?n*(codec.lattice?4:3):count;
         cl_mem out=alloc((long)size*4);
         launch("pixels",count,a==null?dummy:a,b==null?dummy:b,c==null?dummy:c,d==null?dummy:d,out,second==null?dummy:second,error,
-            mode,count,codec.h,codec.w,histCount,Float.floatToRawIntBits(codec.mean),Float.floatToRawIntBits(codec.std),Float.floatToRawIntBits(codec.inv),Float.floatToRawIntBits(codec.gain),codec.stride,codec.lattice?1:0,Float.floatToRawIntBits(codec.conditioningTolerance),codec.cli?1:0);
+            mode,count,codec.h,codec.w,histCount,Float.floatToRawIntBits(codec.mean),Float.floatToRawIntBits(codec.std),Float.floatToRawIntBits(codec.inv),Float.floatToRawIntBits(codec.gain),codec.stride,codec.lattice?1:0,Float.floatToRawIntBits(codec.conditioningTolerance));
         return out;
     }
     FiARCCodec.Tensor tensor(cl_mem m,int c){return new FiARCCodec.Tensor(null,m,c,codec.h,codec.w);}
     FiARCCodec.Tensor conv(String name,FiARCCodec.Tensor x,int kind){return convolution(x,codec.layers.get(name),kind,codec.lut,true);}
-    FiARCCodec.Tensor targetUp(FiARCCodec.Tensor x,FiARCCodec.Tensor target){FiARCCodec.Tensor out=codec.cli?resize(x,target.h,target.w):up(x);release(x);return out;}
+    FiARCCodec.Tensor targetUp(FiARCCodec.Tensor x,FiARCCodec.Tensor target){FiARCCodec.Tensor out=resize(x,target.h,target.w);release(x);return out;}
     FiARCCodec.Tensor merge(FiARCCodec.Tensor a,FiARCCodec.Tensor b){FiARCCodec.require(a.h==b.h&&a.w==b.w,"Concat geometry");return new FiARCCodec.Tensor(null,new Pair(a,b),a.c+b.c,a.h,a.w);}
     FiARCCodec.Tensor block(String name,FiARCCodec.Tensor x,int kind){return conv(name+".2",conv(name+".0",x,kind),kind);}
     cl_mem forecast(){

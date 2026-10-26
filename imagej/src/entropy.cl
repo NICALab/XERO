@@ -1,4 +1,4 @@
-// strict_v2 resident entropy and recurrent state. No frame is independent.
+// Resident entropy and recurrent state. No frame is independent.
 #pragma OPENCL FP_CONTRACT OFF
 inline uint fadd(uint a,uint b){
 #ifdef NVIDIA_DP4A
@@ -23,15 +23,9 @@ inline uint fdiv(uint a,uint b){
 }
 inline uint norm(uint x,uint mean,uint inv){return fmul(fadd(x,mean^0x80000000u),inv);}
 inline uint iscale(uint x,uint tol){return max(0x358637bdu,fmul(x&0x7fffffffu,tol));}
-inline uint restored(uint p,int q,uint esc,__global const uint2*f,__global uint*err){
- uint a=p&0x7fffffffu;if(a>=0x7f800000u||q< -32768||q>32767){atomic_or(err,32768u);return 0;}
- if(q==-32768)return esc;if(!q)return p;uint sign=a?(p&0x80000000u):0;if(!a)a=0x3f800000u;
- int ex=a>>23;uint pm=(a&0x7fffffu)|(ex?0x800000u:0);uint2 factor=f[q+32767];
- return packed(sign,(ulong)pm*factor.x,(ex?ex-150:-149)+(int)factor.y-31);
-}
 __kernel void pixels(__global const uint*a,__global const uint*b,__global const uint*c,__global const uint*d,
  __global uint*out,__global uint*second,__global uint*err,
- int mode,int count,int h,int w,int history,uint mean,uint std,uint inv,uint gain,int stride,int lattice,uint tol,int cli){
+ int mode,int count,int h,int w,int history,uint mean,uint std,uint inv,uint gain,int stride,int lattice,uint tol){
  int i=get_global_id(0),n=h*w;if(i>=count)return;uint v=0;
  if(mode==0)v=mean;
  else if(mode==1)v=fadd(fmul(fadd(a[i],b[(history-1)*n+i]),std),mean);
@@ -40,8 +34,8 @@ __kernel void pixels(__global const uint*a,__global const uint*b,__global const 
   uint feature=fdiv(delta,iscale(a[i],tol));out[2*n+i]=feature;if((feature&0x7fffffffu)>=0x7f800000u)atomic_or(err,65536u);
   if(lattice)out[3*n+i]=(i/w%stride==0&&i%w%stride==0)?0x3f800000u:0;
  }else if(mode==4)v=c[i]?d[i]:fadd(a[i],fmul(b[i],iscale(a[i],tol)));
- else if(mode==5){int y=i/w,x=i%w;v=a[i];second[i]=0;if(y%stride==0&&x%stride==0){int j=y/stride*((w+stride-1)/stride)+x/stride;second[i]=b[j];v=cli?cli_restore(a[i],(int)b[j],c[j],(__global const uint2*)d,err):restored(a[i],(int)b[j],c[j],(__global const uint2*)d,err);}}
- else if(mode==6)v=cli?cli_restore(a[i],(int)b[i],c[i],(__global const uint2*)d,err):restored(a[i],(int)b[i],c[i],(__global const uint2*)d,err);
+ else if(mode==5){int y=i/w,x=i%w;v=a[i];second[i]=0;if(y%stride==0&&x%stride==0){int j=y/stride*((w+stride-1)/stride)+x/stride;second[i]=b[j];v=cli_restore(a[i],(int)b[j],c[j],(__global const uint2*)d,err);}}
+ else if(mode==6)v=cli_restore(a[i],(int)b[i],c[i],(__global const uint2*)d,err);
  else if(mode==7){v=a[i];int y=i/w,x=i%w;if(((x+y)&1)&&!c[i]){int ids[4]={y?i-w:-1,x?i-1:-1,x+1<w?i+1:-1,y+1<h?i+w:-1};uint sum=0;
   for(int k=0;k<4;k++){uint delta=ids[k]<0?0:fadd(b[ids[k]],a[ids[k]]^0x80000000u);uint term=fmul(delta,d[k]);sum=k?fadd(sum,term):term;}v=fadd(v,fmul(gain,sum));}}
  else if(mode==8)v=i>=(history-1)*n?a[i]:fadd(a[i],a[(history-1)*n+i%n]^0x80000000u);

@@ -1,6 +1,8 @@
 import json
+import hashlib
 import subprocess
 import sys
+import zipfile
 from pathlib import Path
 import numpy as np
 import h5py
@@ -43,6 +45,24 @@ def test_bank_is_disjoint_and_preserves_values(tmp_path):
 def test_cli_help():
     r=subprocess.run([sys.executable,'-m','xero','--help'],capture_output=True,text=True)
     assert r.returncode==0 and 'encode' in r.stdout and 'verify' in r.stdout
+
+
+def test_downloadable_imagej_example():
+    folder=Path(__file__).resolve().parents[1]/'imagej/examples'
+    metadata=json.loads((folder/'metadata.json').read_text())
+    path=folder/metadata['file']
+    assert path.stat().st_size==metadata['bytes']
+    assert hashlib.sha256(path.read_bytes()).hexdigest()==metadata['sha256']
+    with zipfile.ZipFile(path) as z:
+        prefix='XERO_demo/'
+        m=json.loads(z.read(prefix+'manifest.json'))
+        assert m['shape']==metadata['shape_tyx'] and m['tolerance']==metadata['tolerance']
+        assert hashlib.sha256(z.read(prefix+m['model'])).hexdigest()==m['model_sha256']
+        for group in m['groups']:
+            packet=z.read(prefix+group['file'])
+            assert len(packet)==group['bytes']
+            assert hashlib.sha256(packet).hexdigest()==group['sha256']
+        assert set(z.namelist())=={prefix+n for n in ['manifest.json',m['model']]+[g['file'] for g in m['groups']]}
 
 
 def test_no_workstation_paths():

@@ -84,7 +84,7 @@ __kernel __attribute__((reqd_work_group_size(32,1,1))) void conv_mma(
  }
  for(int j=0;j<4;j++){int pixel=p0+g+(j/2)*8,ch=c0+2*t+j%2;if(pixel>=plane||ch>=co)continue;
   int dot=lo[j]+128*hi[j];int ex=exponent[ch]+(int)(as_uint(scale[0])>>23)-127;
-  // Same explicitly rounded binary64 epilogue as normative strict_v2.
+  // Explicitly rounded binary64 epilogue.
   double cs=ldexp(1.0,ex);float v=convert_float_rte((double)dot*cs+(double)bias[ch]);
   if(act==1){if(v<=-16.f)v=0;else if(v<16.f)v=(float)lut[grid_integer(as_uint(v),-12)+65536]/4096.f;}
   else if(act==2&&v<=0.f)v=as_float(fmul(as_uint(v),0x3dcccccdu));

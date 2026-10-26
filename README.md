@@ -21,13 +21,13 @@ XERO compresses microscopy movies and image stacks with a **pixelwise relative-e
 |---|---|---|
 | Audit every reconstructed pixel against the supplied input | Neural prediction plus entropy-coded seed and correction streams | CUDA command line, browser CPU/WebGPU, ImageJ CPU/OpenCL |
 
-This repository contains **XERO only**: training, integer-model export, compression, decompression, streaming analysis examples and the ImageJ receiver. Baseline implementations, private imaging datasets and service credentials are not included.
+Train, compress, decompress and analyze microscopy data with XERO, or open compressed images directly in the browser and ImageJ.
 
 ## Start with the viewer
 
 **[Open XERO in your browser](https://xero-viewer.pages.dev/xero/)** — choose a dataset, select a frame range and load it. Use GPU acceleration when available, or the CPU fallback. The viewer provides contrast controls, zoom, virtual loading, ROI measurements and TIFF export. A compatible browser is sufficient; no Python installation is needed.
 
-Prefer Fiji/ImageJ? **[Download and install the XERO plugin](imagej/README.md)**. It reads the same supported compressed archive without a browser or Python process.
+Prefer Fiji/ImageJ? **[Install the XERO plugin](imagej/README.md)** and try the **[small example movie](imagej/examples/XERO_demo.zip?raw=true)**. No browser or Python process is needed.
 
 ## Quick start
 
@@ -82,7 +82,7 @@ abs(x_hat - x) <= epsilon * abs(x)
 
 There is **no absolute-error floor for dark pixels**; zero must reconstruct as zero. Unsafe cases use exact float32 escape values. The bound is relative to the **input supplied to the compressor**. If that input was denoised, the compression bound does not certify the denoiser's error relative to a clean specimen. XERO is bounded-error compression, not lossless compression.
 
-Integer convolution and fixed probability tables support interoperable decoding. Historical profile IDs are retained inside files for compatibility. This is **not a claim that all operating systems, GPUs or drivers have been exhaustively tested**. Run the ImageJ compatibility check on new hardware. [Numerical contract and limitations →](docs/method.md)
+Integer convolution and fixed probability tables support interoperable decoding. Run the ImageJ compatibility check on new hardware. [Numerical contract and supported platforms →](docs/method.md)
 
 ## Work directly from compressed data
 
@@ -102,14 +102,11 @@ Memory is bounded by the restart block, neural workspaces and the consumer—not
 
 | Directory | Contents |
 |---|---|
-| [`src/xero`](src/xero) | CLI, streaming I/O, training interface and current integer runtime |
-| [`src/ficompress`](src/ficompress) | Preserved low-level neural/entropy primitives and CUDA kernels |
+| [`src/xero`](src/xero) | Training, compression, streaming decoding and CUDA kernels |
 | [`tutorials`](tutorials) | Synthetic round trip and on-demand ROI analysis |
 | [`imagej`](imagej) | Installable JAR, Java/OpenCL sources, build instructions and license notices |
 | [`tests`](tests) | Input/format checks and optional CUDA integration tests |
 | [`docs`](docs) | Installation, scientific contract, training and release validation |
-
-The `ficompress` namespace and `fiarc_*` format identifiers are compatibility details, not a different algorithm. Existing research files were not renamed or rewritten during release preparation.
 
 ## License and support
 

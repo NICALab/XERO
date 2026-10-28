@@ -13,12 +13,14 @@ Each ZIP is below **100 MB** (100,000,000 bytes) and contains a continuous recor
 
 | Example | Frames | ZIP download | Decoded float32 pixels | Bound |
 |---|---:|---:|---:|---:|
-| [OpenScope dendritic calcium (longer)](XERO_OpenScope_Longer.zip) | 5,120 | 99.95 MB | 5.04 GB | 1% |
-| [Zebrafish spinal-cord voltage (longer)](XERO_Spinal_Cord_Longer.zip) | 8,192 | 99.58 MB | 4.97 GB | 0.5% |
+| [Download OpenScope dendritic calcium (longer)](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_Longer.zip) | 5,120 | 99.95 MB | 5.04 GB | 1% |
+| [Download zebrafish spinal-cord voltage (longer)](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_Longer.zip) | 8,192 | 99.58 MB | 4.97 GB | 0.5% |
 
 The longer excerpts use the same frame sizes as the short examples. MB and GB here are decimal units. Unzipping leaves the images compressed; the float32 memory is needed when opening them in ImageJ.
 
-Open the file page and click **Download raw file** (download icon), then unzip it. If the repository is private, GitHub requires an authorized login.
+The **longer-example links above download the ZIP directly**, without a login or API key. Files are stored in Cloudflare R2 and streamed through our read-only download endpoint, with support for resumed downloads. Identical [OpenScope](XERO_OpenScope_Longer.zip) and [spinal-cord](XERO_Spinal_Cord_Longer.zip) files remain in this repository as mirrors.
+
+For the short examples or GitHub mirrors, open the file page and click **Download raw file** (download icon). If the repository is private, GitHub requires an authorized login. Unzip the downloaded file before opening it in ImageJ.
 
 In Fiji/ImageJ choose **Plugins → Compression (XERO) → Open compressed image**, select the extracted archive folder, and choose a frame range. For a quick check, open frames **1–128**. For the complete longer examples, choose **1–5120** (OpenScope) or **1–8192** (spinal cord). Use **Auto** or **GPU / OpenCL** when available. CPU also works, but is slower. The first 128 frames require approximately 126 MB and 78 MB of float32 pixels respectively, plus decoder workspace.
 

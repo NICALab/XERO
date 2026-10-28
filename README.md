@@ -29,7 +29,7 @@ Train, compress, decompress and analyze microscopy data with XERO, or open compr
 
 Prefer Fiji/ImageJ? **[Install the XERO plugin](imagej/README.md)** and try the **[OpenScope calcium](imagej/examples/XERO_OpenScope.zip)** or **[spinal-cord voltage](imagej/examples/XERO_Spinal_Cord.zip)** example. Open the GitHub file page and click its download icon. The plugin appears under **Plugins → Compression (XERO)**; no browser or Python process is needed.
 
-Want a longer recording? **[OpenScope dendritic calcium (longer)](imagej/examples/XERO_OpenScope_Longer.zip)** contains **5,120 frames / 99.95 MB**, and **[zebrafish spinal-cord voltage (longer)](imagej/examples/XERO_Spinal_Cord_Longer.zip)** contains **8,192 frames / 99.58 MB**. See the [memory guidance](imagej/examples/README.md#longer-examples) before loading an entire longer example.
+Want a longer recording? **[Download OpenScope dendritic calcium (longer)](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_Longer.zip)** — **5,120 frames / 99.95 MB**; **[download zebrafish spinal-cord voltage (longer)](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_Longer.zip)** — **8,192 frames / 99.58 MB**. These links download the ZIP directly, without a GitHub login. See the [memory guidance](imagej/examples/README.md#longer-examples) before loading an entire longer example.
 
 ## Download compressed recordings
 

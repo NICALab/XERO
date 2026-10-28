@@ -4,8 +4,8 @@ Short and longer excerpts from the compressed datasets served by the XERO viewer
 
 | File | Imaging modality | Dimensions (width × height × frames) | Bound |
 |---|---|---|---:|
-| [XERO_OpenScope.zip](XERO_OpenScope.zip) | Mouse dendritic calcium, OpenScope sub-412933 | 496 × 496 × 128 | 1% |
-| [XERO_Spinal_Cord.zip](XERO_Spinal_Cord.zip) | Zebrafish spinal-cord voltage | 1024 × 148 × 128 | 0.5% |
+| [XERO_OpenScope.zip](https://xero-viewer.pages.dev/downloads/XERO_OpenScope.zip) | Mouse dendritic calcium, OpenScope sub-412933 | 496 × 496 × 128 | 1% |
+| [XERO_Spinal_Cord.zip](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord.zip) | Zebrafish spinal-cord voltage | 1024 × 148 × 128 | 0.5% |
 
 ### Longer examples
 
@@ -18,9 +18,9 @@ Each ZIP is below **100 MB** (100,000,000 bytes) and contains a continuous recor
 
 The longer excerpts use the same frame sizes as the short examples. MB and GB here are decimal units. Unzipping leaves the images compressed; the float32 memory is needed when opening them in ImageJ.
 
-The **longer-example links above download the ZIP directly**, without a login or API key. Files are stored in Cloudflare R2 and streamed through our read-only download endpoint, with support for resumed downloads. Identical [OpenScope](XERO_OpenScope_Longer.zip) and [spinal-cord](XERO_Spinal_Cord_Longer.zip) files remain in this repository as mirrors.
+**All example links in the tables above download the ZIP directly**, without a login or API key. Files are stored in Cloudflare R2 and streamed through our read-only download endpoint, with support for resumed downloads. Identical short [OpenScope](XERO_OpenScope.zip) and [spinal-cord](XERO_Spinal_Cord.zip) examples, and longer [OpenScope](XERO_OpenScope_Longer.zip) and [spinal-cord](XERO_Spinal_Cord_Longer.zip) examples remain in this repository as mirrors.
 
-For the short examples or GitHub mirrors, open the file page and click **Download raw file** (download icon). If the repository is private, GitHub requires an authorized login. Unzip the downloaded file before opening it in ImageJ.
+Unzip the downloaded example before opening it in ImageJ. Only when using a GitHub mirror, open the file page and click **Download raw file** (download icon); a private repository requires an authorized login.
 
 In Fiji/ImageJ choose **Plugins → Compression (XERO) → Open compressed image**, select the extracted archive folder, and choose a frame range. For a quick check, open frames **1–128**. For the complete longer examples, choose **1–5120** (OpenScope) or **1–8192** (spinal cord). Use **Auto** or **GPU / OpenCL** when available. CPU also works, but is slower. The first 128 frames require approximately 126 MB and 78 MB of float32 pixels respectively, plus decoder workspace.
 

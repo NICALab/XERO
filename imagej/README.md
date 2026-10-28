@@ -1,14 +1,14 @@
 # XERO for ImageJ / Fiji
 
-**[XERO_ImageJ.jar — open file page](XERO_ImageJ.jar)** · [Source](src) · [Licenses](THIRD_PARTY_NOTICES.md)
+**[Download XERO_ImageJ.jar](https://xero-viewer.pages.dev/downloads/XERO_ImageJ.jar)** · [Source](src) · [Licenses](THIRD_PARTY_NOTICES.md)
 
-On the file page, use **Download raw file** (the download icon). If this repository is private, sign in with an account that has access; a private repository returns 404 to unauthorized visitors.
+The plugin and example links download directly from Cloudflare R2 through our read-only download endpoint. No GitHub login or API key is needed. A [GitHub copy of the plugin](XERO_ImageJ.jar) is also available.
 
 Open compressed images directly in ImageJ. CPU decoding runs in Java; optional GPU decoding uses OpenCL through the bundled JOCL binding. **No Python, browser, local web server, PyTorch, or separate decoder application is needed.**
 
 ## Install
 
-1. Download `XERO_ImageJ.jar` and copy it into Fiji/ImageJ's `plugins` directory.
+1. [Download `XERO_ImageJ.jar`](https://xero-viewer.pages.dev/downloads/XERO_ImageJ.jar) and copy it into Fiji/ImageJ's `plugins` directory. Keep the `.jar` extension; do not unzip the plugin.
 2. Restart ImageJ, then run **Plugins → Compression (XERO) → Check CPU or GPU compatibility**. Start with CPU, then check GPU if available.
 3. Choose **Plugins → Compression (XERO) → Open compressed image** and select the local archive folder containing `manifest.json`, `model.npz` and `group_*.bin`.
 4. Use **Auto** compute, choose a frame range, and open it. Selected frames are decoded into an ordinary ImageJ stack. The progress window supports cancellation.
@@ -21,10 +21,10 @@ Choose one of these short biological recordings:
 
 | Example | Frame size | Frames | Relative-error bound |
 |---|---|---:|---:|
-| [OpenScope dendritic calcium](examples/XERO_OpenScope.zip) | 496 × 496 | 128 | 1% |
-| [Zebrafish spinal-cord voltage](examples/XERO_Spinal_Cord.zip) | 1024 × 148 | 128 | 0.5% |
+| [OpenScope dendritic calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope.zip) | 496 × 496 | 128 | 1% |
+| [Zebrafish spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord.zip) | 1024 × 148 | 128 | 0.5% |
 
-1. Open the ZIP's GitHub file page, choose **Download raw file**, and unzip it.
+1. Click an example link above to download its ZIP, then unzip it.
 2. In **Plugins → Compression (XERO) → Open compressed image**, select the extracted `XERO_OpenScope` or `XERO_Spinal_Cord` folder.
 3. Select frames **1–128** and open the stack. Use ImageJ's brightness/contrast controls and frame slider to explore it. GPU is recommended; CPU is supported but can take longer.
 

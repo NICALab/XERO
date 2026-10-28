@@ -9,7 +9,7 @@
 [![Browser viewer](https://img.shields.io/badge/Open-browser%20viewer-0d9488.svg)](https://xero-viewer.pages.dev/xero/)
 [![ImageJ](https://img.shields.io/badge/ImageJ-plugin-e18b34.svg)](imagej/README.md)
 
-[**Try the viewer ↗**](https://xero-viewer.pages.dev/xero/) · [Quick start](#quick-start) · [Tutorials](tutorials/README.md) · [ImageJ plugin](imagej/README.md) · [How it works](docs/method.md)
+[**Project page ↗**](https://xero-viewer.pages.dev/project/) · [Try the viewer](https://xero-viewer.pages.dev/xero/) · [Quick start](#quick-start) · [Tutorials](tutorials/README.md) · [ImageJ plugin](imagej/README.md)
 
 </div>
 

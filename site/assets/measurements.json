@@ -1,0 +1,59 @@
+{
+  "comparison": {
+    "dataset": "Allen two-photon calcium",
+    "recording": "557304694",
+    "frame_zero_based": 94272,
+    "shape": [
+      496,
+      496
+    ],
+    "error_bound_percent": 1,
+    "display_limits": [
+      146.44418334960938,
+      441.62017822265625
+    ],
+    "lut": "black-green-yellow-white",
+    "same_display_mapping": true,
+    "scientific_check": "Pixelwise 1% bound verified on float32 arrays before LUT mapping"
+  },
+  "storage": [
+    {
+      "dataset": "allen",
+      "bound_percent": 1.0,
+      "uint16_equivalent_bytes": 56811490816,
+      "archive_bytes": 1620698209,
+      "ratio": 35.05371357882459
+    },
+    {
+      "dataset": "zarchon",
+      "bound_percent": 0.5,
+      "uint16_equivalent_bytes": 7256309760,
+      "archive_bytes": 294076874,
+      "ratio": 24.674873822278183
+    },
+    {
+      "dataset": "kidney_ch1",
+      "bound_percent": 2.0,
+      "uint16_equivalent_bytes": 174749878256,
+      "archive_bytes": 3319972873,
+      "ratio": 52.63593557560975
+    },
+    {
+      "dataset": "ChAT cropped whole-embryo volume",
+      "bound_percent": 2,
+      "uint16_equivalent_bytes": 178016606040,
+      "archive_bytes": 1529490391,
+      "ratio": 116.3894896545316
+    }
+  ],
+  "size_basis": "Full matched retained recordings; uncompressed uint16-equivalent arrays; archive includes decoder model and required metadata. Not raw file-on-disk sizes.",
+  "downstream": {
+    "task": "Joint neuron/glia swim-power prediction",
+    "denoised_pcc": 0.9028,
+    "xero_pcc": 0.9022,
+    "bound_percent": 1,
+    "protocol": "Same frozen model trained on denoised inputs; mean across three seeds",
+    "source": "Joint-channel Ahrens evaluation, manuscript Fig. 3"
+  },
+  "media": "Presentation excerpts from supplementary videos; compressed web video is for display, not numerical verification."
+}

@@ -2,15 +2,15 @@
 
 ## Prepare frozen targets
 
-Use one channel and one ordered recording/stack per input. Denoise first if that is your scientific workflow. XERO does not alter that decision or run a denoiser implicitly.
+Use one channel and one ordered recording/stack per input. Denoise beforehand if required by your workflow.
 
 ```bash
 xero prepare --input sample_a.h5 sample_b.h5 --output outputs/bank
 ```
 
-Each source is split into contiguous 80/10/10 train/calibration/test intervals. Targets are stored as float32 HDF5, with the original intensity values. Separate roles never overlap within a recording. Normalization is estimated only from the training bank. These are within-recording holdouts, **not independent-animal generalization**. For specimen-level generalization, prepare separate banks explicitly and leave the held-out specimen out of training and calibration.
+Each source is split into contiguous 80/10/10 training/calibration/test intervals and saved as float32 HDF5. Normalization is estimated from training data only. For specimen-level evaluation, use separate banks and exclude the held-out specimen from training and calibration.
 
-The preparer writes derived HDF5 copies, so budget disk space. It does not overwrite input. Temporal/z-boundaries are respected; absent context is filled with the training mean, not frames from another role/recording. For sparse heterogeneous acquisitions, provide representative training recordings covering the signal-density distribution; the cache balances recordings but does not automatically establish biological representativeness.
+Preparation creates HDF5 copies, so allow additional disk space. Context never crosses recording or split boundaries. Include representative sparse and dense regions in training; the cache balances recordings.
 
 ## Train
 
@@ -21,9 +21,9 @@ xero train --bank outputs/bank --out outputs/model_1pct \
   --width 32 --refiner-width 16 --compile --skip-short-audits
 ```
 
-The 50,000-step example is a starting point, not a guarantee of convergence. Reduce batch/tile/patch sizes for limited VRAM. The demo's 10 steps and two-step rollout are **software checks only**. Architecture and tolerance are recorded in each checkpoint. Supported release bounds are positive fractions up to 0.5; large tolerances require scientific validation, not just a successful codec audit.
+Adjust training duration using calibration performance, and reduce batch/tile/patch sizes for limited VRAM. Supported tolerances are positive fractions up to `0.5`; select a bound appropriate for your analysis.
 
-Output includes `latest.pt`, numbered checkpoints, surrogate loss/rate logs, TensorBoard records and previews. A completed training run does not establish a good compression ratio. `best_estimated.pt` is selected by a surrogate training rate, not held-out actual compressed size.
+Outputs include `latest.pt`, numbered checkpoints, logs and previews. `best_estimated.pt` uses the surrogate training rate; select the final checkpoint using actual calibration bytes.
 
 ## Select using calibration bytes
 
@@ -36,9 +36,7 @@ xero encode --input outputs/bank/record000_calibration.h5 \
 
 Compare actual compressed sizes, including model and manifest. Freeze the chosen checkpoint **before** encoding `record000_test.h5`. Do not tune on the test compression ratio or downstream metric. Use the same input dtype and accounting basis in comparisons; float32 and uint16-equivalent ratios differ by 2× for identical pixels and bytes.
 
-The error tolerance belongs to the trained checkpoint. To evaluate 1%, 5% and 20%, train/select separate checkpoints at `0.01`, `0.05` and `0.20`; do not relabel one archive. Post-training integer export occurs during `xero encode`; changing to this deployment representation alone does not require inventing a different training objective.
-
-Do not deploy an untrained, zero-output-head checkpoint. A degenerate initialized checkpoint failed the independent reconstruction audit during release stress testing; the encoder rejected it and did not publish a manifest. A successful optimizer step or model export is not a decoding qualification. If any checkpoint fails the audit, keep the incomplete output for diagnosis, select/calibrate another checkpoint and do not bypass the check or relabel the files.
+The checkpoint fixes the tolerance. For 1%, 5% and 20%, train/select separate checkpoints at `0.01`, `0.05` and `0.20`. Integer model export occurs during `xero encode`, which independently verifies the reconstruction before completing the archive. Do not bypass a failed reconstruction check.
 
 ## Resume
 

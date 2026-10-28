@@ -12,7 +12,7 @@ source → final bounded correction → entropy-coded packets
                            reconstructed frame → history
 ```
 
-The source is never available to the receiver. Prediction is sequential in the acquisition/stack dimension; spatial neural computation and entropy streams can be parallelized without substituting future source frames for decoded history.
+Prediction is sequential along time or z; spatial neural computation and entropy streams run in parallel.
 
 ## Learning
 
@@ -24,9 +24,9 @@ rate(seed symbols + final symbols + escapes)
     + 0.4 × Huber(temporal prediction error / local scale)
 ```
 
-The loss scale is clamped to avoid division by zero during optimization. **That training clamp is not a dark-pixel floor in the final fidelity contract.** Hard symbols/masks in the forward pass and surrogate gradients during training do not themselves prove a bound. Actual bytes and independently decoded values are checked when encoding.
+Training uses hard symbols/masks with surrogate gradients. The loss scale is clamped for numerical stability; the final error bound has no dark-pixel floor. Encoding independently checks reconstructed values against the input.
 
-Floating-point training is followed by decoder-model export with A13 activations, W8 weights and checked bounded integer convolution accumulation. Fixed activation/probability tables and the serialized profile govern decoding. Some preprocessing, interpolation and final reconstruction still involve defined floating-point operations; do not describe this as every operation being an integer operation or as a formal proof for every driver/device.
+Floating-point training is followed by export with A13 activations, W8 weights and bounded integer convolution accumulation. Fixed activation/probability tables and the serialized profile govern decoding; preprocessing, interpolation and reconstruction also use specified floating-point operations.
 
 ## Source domain
 
@@ -40,4 +40,4 @@ The CLI export supports causal models. Unsupported future/contextual model famil
 
 ## Trust
 
-Training checkpoints use PyTorch serialization and must be trusted. Archives contain array-based decoder models and integrity hashes; hashes detect accidental corruption, not malicious replacement. No security audit for hostile inputs is claimed. Do not expose a privileged server-side decoder to untrusted uploads.
+Only load trusted checkpoints and archives. Integrity hashes detect corruption, not authenticity.

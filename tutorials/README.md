@@ -17,9 +17,9 @@ python tutorials/03_stream_roi.py --archive outputs/demo/archive \
   --roi 10 30 10 30 --output outputs/demo/roi.csv
 ```
 
-The full tutorial generates only artificial data and writes only `outputs/demo/`. Run it in a clean output location; rerunning refuses to overwrite previous results. It trains for ten steps to keep the software demonstration small. **Do not interpret its compression ratio as trained microscopy performance.**
+The round-trip tutorial uses synthetic data and ten training steps, writing to `outputs/demo/`. Choose a fresh output directory when rerunning. This is a workflow demonstration, not a compression benchmark.
 
-`demo_model.pt` is the trusted 10-step artificial-data checkpoint produced during release validation (optimizer removed). To skip training, run `01_make_demo.py` and then encode its output with `--checkpoint tutorials/demo_model.pt`. This is not a pretrained biological model, and the numerical framework version can affect freshly repeated training.
+To skip training, run `01_make_demo.py` and encode its output with `--checkpoint tutorials/demo_model.pt`. This checkpoint is trained on the synthetic example.
 
 To inspect a subset without accumulating all frames:
 

@@ -2,6 +2,7 @@
   "examples": [
     {
       "file": "XERO_OpenScope.zip",
+      "url": "https://xero-viewer.pages.dev/downloads/XERO_OpenScope.zip",
       "folder": "XERO_OpenScope",
       "bytes": 2853948,
       "sha256": "cfa4a21d7092147fb58cc2a3948fded5e54604ea8dcd1cb655d75360a2f4abae",
@@ -20,6 +21,7 @@
     },
     {
       "file": "XERO_Spinal_Cord.zip",
+      "url": "https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord.zip",
       "folder": "XERO_Spinal_Cord",
       "bytes": 1986551,
       "sha256": "fcabc3c42e4b56399b056f1cc56a7b5c923545a97224129770e550602403009a",
@@ -38,6 +40,7 @@
     },
     {
       "file": "XERO_OpenScope_Longer.zip",
+      "url": "https://xero-viewer.pages.dev/downloads/XERO_OpenScope_Longer.zip",
       "folder": "XERO_OpenScope_Longer",
       "bytes": 99954417,
       "sha256": "1d7a2a61b392b7bd6cd9a77d05371c684c8119f7a22665f056313dfe29f81c8c",
@@ -57,6 +60,7 @@
     },
     {
       "file": "XERO_Spinal_Cord_Longer.zip",
+      "url": "https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_Longer.zip",
       "folder": "XERO_Spinal_Cord_Longer",
       "bytes": 99576066,
       "sha256": "67665b5901aca6b4a05697b4a17d6bb6e1135dfefe9d4d6796e72d29f598e7ff",

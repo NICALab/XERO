@@ -47,24 +47,39 @@ def test_cli_help():
     assert r.returncode==0 and 'encode' in r.stdout and 'verify' in r.stdout
 
 
-def test_downloadable_imagej_example():
-    folder=Path(__file__).resolve().parents[1]/'imagej/examples'
-    examples=json.loads((folder/'metadata.json').read_text())['examples']
-    assert len(examples)==2
-    for metadata in examples:
-        path=folder/metadata['file']
-        assert path.stat().st_size==metadata['bytes']
-        assert hashlib.sha256(path.read_bytes()).hexdigest()==metadata['sha256']
-        with zipfile.ZipFile(path) as z:
-            prefix=metadata['folder']+'/'
-            m=json.loads(z.read(prefix+'manifest.json'))
-            assert m['shape']==metadata['shape_tyx'] and m['tolerance']==metadata['tolerance']
-            assert hashlib.sha256(z.read(prefix+m['model'])).hexdigest()==m['model_sha256']
-            for group in m['groups']:
-                packet=z.read(prefix+group['file'])
-                assert len(packet)==group['bytes']
-                assert hashlib.sha256(packet).hexdigest()==group['sha256']
-            assert set(z.namelist())=={prefix+n for n in ['manifest.json','download.json',m['model']]+[g['file'] for g in m['groups']]}
+EXAMPLE_FOLDER=Path(__file__).resolve().parents[1]/'imagej/examples'
+EXAMPLES=json.loads((EXAMPLE_FOLDER/'metadata.json').read_text())['examples']
+
+
+def test_imagej_example_catalog():
+    assert EXAMPLES
+    assert len({m['file'] for m in EXAMPLES})==len(EXAMPLES)
+    for m in EXAMPLES:
+        assert Path(m['file']).name==m['file'] and m['file'].endswith('.zip')
+        assert m['url']=='https://xero-viewer.pages.dev/downloads/'+m['file']
+        assert 0<m['bytes']<100_000_000
+        assert len(m['sha256'])==64 and len(bytes.fromhex(m['sha256']))==32
+        assert len(m['shape_tyx'])==3 and all(v>0 for v in m['shape_tyx'])
+        assert m['source_range'][1]-m['source_range'][0]==m['shape_tyx'][0]
+
+
+@pytest.mark.parametrize('metadata',EXAMPLES,ids=[m['file'] for m in EXAMPLES])
+def test_downloaded_imagej_example(metadata):
+    path=EXAMPLE_FOLDER/metadata['file']
+    if not path.exists():
+        pytest.skip('Optional R2 example not downloaded locally')
+    assert path.stat().st_size==metadata['bytes']
+    assert hashlib.sha256(path.read_bytes()).hexdigest()==metadata['sha256']
+    with zipfile.ZipFile(path) as z:
+        prefix=metadata['folder']+'/'
+        m=json.loads(z.read(prefix+'manifest.json'))
+        assert m['shape']==metadata['shape_tyx'] and m['tolerance']==metadata['tolerance']
+        assert hashlib.sha256(z.read(prefix+m['model'])).hexdigest()==m['model_sha256']
+        for group in m['groups']:
+            packet=z.read(prefix+group['file'])
+            assert len(packet)==group['bytes']
+            assert hashlib.sha256(packet).hexdigest()==group['sha256']
+        assert set(z.namelist())=={prefix+n for n in ['manifest.json','download.json',m['model']]+[g['file'] for g in m['groups']]}
 
 
 def test_no_workstation_paths():

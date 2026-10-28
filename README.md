@@ -21,19 +21,17 @@ XERO compresses microscopy movies and image stacks with a **pixelwise relative-e
 |---|---|---|
 | Audit every reconstructed pixel against the supplied input | Neural prediction plus entropy-coded seed and correction streams | CUDA command line, browser CPU/WebGPU, ImageJ CPU/OpenCL |
 
-Train, compress, decompress and analyze microscopy data with XERO, or open compressed images directly in the browser and ImageJ.
-
 ## Start with the viewer
 
-**[Open XERO in your browser](https://xero-viewer.pages.dev/xero/)** — choose a dataset, select a frame range and load it. Use GPU acceleration when available, or the CPU fallback. The viewer provides contrast controls, zoom, virtual loading, ROI measurements and TIFF export. A compatible browser is sufficient; no Python installation is needed.
+**[Open XERO in your browser](https://xero-viewer.pages.dev/xero/)** — choose a dataset and frame range. The viewer supports CPU/WebGPU decoding, contrast controls, zoom, virtual loading, ROI measurements and TIFF export.
 
-Prefer Fiji/ImageJ? **[Download the XERO plugin](https://xero-viewer.pages.dev/downloads/XERO_ImageJ.jar)** ([installation guide](imagej/README.md)) and try the **[OpenScope calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope.zip)** or **[spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord.zip)** example. All three links download directly, without a login. The plugin appears under **Plugins → Compression (XERO)**; no browser or Python process is needed to open the downloaded recordings.
+Prefer Fiji/ImageJ? **[Download the XERO plugin](https://xero-viewer.pages.dev/downloads/XERO_ImageJ.jar)** ([installation guide](imagej/README.md)) and try the **[OpenScope calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope.zip)** or **[spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord.zip)** example.
 
-Want a longer recording? **[Download OpenScope dendritic calcium (longer)](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_Longer.zip)** — **5,120 frames / 99.95 MB**; **[download zebrafish spinal-cord voltage (longer)](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_Longer.zip)** — **8,192 frames / 99.58 MB**. These links download the ZIP directly, without a GitHub login. See the [memory guidance](imagej/examples/README.md#longer-examples) before loading an entire longer example.
+Longer examples: **[OpenScope dendritic calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_Longer.zip)** — **5,120 frames / 99.95 MB**; **[zebrafish spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_Longer.zip)** — **8,192 frames / 99.58 MB**. See [memory requirements](imagej/examples/README.md#longer-examples).
 
 ## Download compressed recordings
 
-Use the standalone Python script to download from the viewer's live catalog. No XERO installation, GPU, Cloudflare credentials or decompression is needed.
+Select a recording and frame range from the viewer's catalog using the standalone Python downloader:
 
 ```bash
 python tutorials/05_download_compressed.py --list
@@ -43,13 +41,13 @@ python tutorials/05_download_compressed.py --dataset spinal-cord-voltage \
   --start 0 --end 128 --output downloads/spinal_cord
 ```
 
-`start` is included and `end` is excluded, using **zero-based source indices**. Necessary restart context and complete packets are included; `download.json` records the exact source/local mapping. [Dataset selection, resume and ImageJ instructions →](docs/download.md)
+Ranges use **zero-based, end-exclusive indices**. [Dataset selection and frame indexing →](docs/download.md)
 
 ## Quick start
 
 ### 1. Install
 
-The Python training/encoding/decoding path currently targets **Linux with an NVIDIA GPU**. Install a CUDA-enabled PyTorch build, its matching CUDA development toolkit (`nvcc`), and a C++17 compiler first. PyTorch is deliberately not installed automatically, to avoid replacing your CUDA build.
+The Python CLI requires **Linux with an NVIDIA GPU**, CUDA-enabled PyTorch, a matching CUDA development toolkit (`nvcc`) and a C++17 compiler.
 
 ```bash
 git clone https://github.com/NICALab/XERO.git
@@ -61,7 +59,7 @@ python -m pip install -e '.[train,test]'
 xero --help
 ```
 
-See [installation and platform requirements](docs/installation.md). Native extensions and CUDA graphs are compiled/initialized on first use; first-run latency is not steady-state decoding speed.
+See [installation requirements](docs/installation.md). The first run includes CUDA compilation and initialization.
 
 ### 2. Run an end-to-end tutorial
 
@@ -69,7 +67,7 @@ See [installation and platform requirements](docs/installation.md). Native exten
 bash tutorials/02_roundtrip.sh
 ```
 
-The tutorial generates a tiny fluorescence-like movie, prepares disjoint training/calibration/test intervals, trains for **10 demonstration steps**, encodes it, decodes it, and checks the relative-error bound. Outputs appear under `outputs/demo/`. No research dataset or pretrained download is required. The 10-step model demonstrates functionality, **not the paper's compression performance**.
+The tutorial generates a synthetic movie, prepares training/calibration/test splits, trains for 10 steps, and verifies an encode/decode round trip. Outputs appear under `outputs/demo/`. This short run demonstrates the workflow, not the paper's compression performance.
 
 ### 3. Compress your data
 
@@ -86,7 +84,7 @@ xero decode --archive outputs/compressed --output outputs/reconstructed.tif
 xero verify --archive outputs/compressed --input denoised.h5
 ```
 
-`--tolerance 0.01` means **1%**, not 0.01%. The checkpoint fixes the bound; encoding does not silently change it. Adjust patch/batch/cache settings to your hardware. A model trained on one acquisition is not guaranteed to compress another acquisition efficiently. [Training and calibration guide →](docs/training.md)
+`--tolerance 0.01` means **1%**. The bound is fixed by the checkpoint. Adjust batch and patch sizes to your GPU memory, and select a checkpoint using calibration data. [Training guide →](docs/training.md)
 
 ## What is guaranteed?
 
@@ -96,9 +94,7 @@ For each finite input pixel `x` and its reconstructed value `x_hat`, encoding in
 abs(x_hat - x) <= epsilon * abs(x)
 ```
 
-There is **no absolute-error floor for dark pixels**; zero must reconstruct as zero. Unsafe cases use exact float32 escape values. The bound is relative to the **input supplied to the compressor**. If that input was denoised, the compression bound does not certify the denoiser's error relative to a clean specimen. XERO is bounded-error compression, not lossless compression.
-
-Integer convolution and fixed probability tables support interoperable decoding. Run the ImageJ compatibility check on new hardware. [Numerical contract and supported platforms →](docs/method.md)
+The bound applies to the **input supplied to the compressor**, with exact reconstruction at zero. For denoised input, it bounds compression error, not denoising error. [Numerical contract →](docs/method.md)
 
 ## Work directly from compressed data
 
@@ -112,7 +108,7 @@ python tutorials/03_stream_roi.py --archive outputs/compressed \
   --roi 10 30 10 30 --output outputs/roi.csv
 ```
 
-Memory is bounded by the restart block, neural workspaces and the consumer—not by the entire recording. It still scales with XY and model size; very large frames can exceed GPU memory. [Archive format and random access →](docs/archive.md)
+Streaming avoids storing the full decoded recording; memory use still depends on frame size, model size and retained output. [Archive format and random access →](docs/archive.md)
 
 ## Repository guide
 
@@ -120,7 +116,7 @@ Memory is bounded by the restart block, neural workspaces and the consumer—not
 |---|---|
 | [`src/xero`](src/xero) | Training, compression, streaming decoding and CUDA kernels |
 | [`tutorials`](tutorials) | Training round trip, on-demand ROI analysis and compressed-data downloader |
-| [`imagej`](imagej) | Installable JAR, Java/OpenCL sources, build instructions and license notices |
+| [`imagej`](imagej) | Plugin downloads, Java/OpenCL sources and build instructions |
 | [`tests`](tests) | Input/format checks and optional CUDA integration tests |
 | [`docs`](docs) | Installation, scientific contract, training and release validation |
 

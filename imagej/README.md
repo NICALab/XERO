@@ -2,9 +2,7 @@
 
 **[Download XERO_ImageJ.jar](https://xero-viewer.pages.dev/downloads/XERO_ImageJ.jar)** · [Source](src) · [Licenses](THIRD_PARTY_NOTICES.md)
 
-The plugin and example links download directly from Cloudflare R2 through our read-only download endpoint. No GitHub login or API key is needed. A [GitHub copy of the plugin](XERO_ImageJ.jar) is also available.
-
-Open compressed images directly in ImageJ. CPU decoding runs in Java; optional GPU decoding uses OpenCL through the bundled JOCL binding. **No Python, browser, local web server, PyTorch, or separate decoder application is needed.**
+Open XERO-compressed images in Fiji/ImageJ with CPU or OpenCL GPU decoding.
 
 ## Install
 
@@ -13,7 +11,7 @@ Open compressed images directly in ImageJ. CPU decoding runs in Java; optional G
 3. Choose **Plugins → Compression (XERO) → Open compressed image** and select the local archive folder containing `manifest.json`, `model.npz` and `group_*.bin`.
 4. Use **Auto** compute, choose a frame range, and open it. Selected frames are decoded into an ordinary ImageJ stack. The progress window supports cancellation.
 
-Frame numbers in ImageJ are **one-based and inclusive**. Python uses zero-based, half-open ranges. The plugin opens local/mounted folders, not arbitrary R2 URLs. For web-hosted data use the [browser viewer](https://xero-viewer.pages.dev/xero/).
+Frame numbers are **one-based and inclusive**. Select a local or mounted archive folder. For online viewing, use the [browser viewer](https://xero-viewer.pages.dev/xero/).
 
 ## Try a small example
 
@@ -28,7 +26,7 @@ Choose one of these short biological recordings:
 2. In **Plugins → Compression (XERO) → Open compressed image**, select the extracted `XERO_OpenScope` or `XERO_Spinal_Cord` folder.
 3. Select frames **1–128** and open the stack. Use ImageJ's brightness/contrast controls and frame slider to explore it. GPU is recommended; CPU is supported but can take longer.
 
-Both examples contain the original compressed packets and the required decoder model. No training, Python installation or additional model download is required. [Example details](examples/README.md). To download a different recording or range without decompressing it, use the [Python archive downloader](../docs/download.md).
+For other recordings or frame ranges, use the [Python archive downloader](../docs/download.md).
 
 ### Longer examples
 
@@ -37,25 +35,25 @@ Both examples contain the original compressed packets and the required decoder m
 | [Download OpenScope dendritic calcium (longer)](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_Longer.zip) | 5,120 | 99.95 MB | 1% |
 | [Download zebrafish spinal-cord voltage (longer)](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_Longer.zip) | 8,192 | 99.58 MB | 0.5% |
 
-The longer-example links download the ZIP directly from Cloudflare R2 through our read-only download endpoint; no GitHub login or API key is needed. Unzip and select the extracted folder as above. Open frames **1–5120** or **1–8192** respectively, or any smaller range. Each full example expands to approximately **5 GB of float32 pixels in RAM**, plus workspace. Opening all frames requires sufficient free RAM and an ImageJ Java heap of **16 GiB** under the plugin's memory guard; see the [memory setup and exact sizes](examples/README.md#longer-examples). Both ZIPs are below 100,000,000 bytes.
+Open frames **1–5120** or **1–8192**, or a smaller range. Each full example needs approximately **5 GB for float32 pixels**, plus decoder workspace. To open all frames, allocate a **16 GiB ImageJ heap** on a computer with sufficient free RAM. [Memory setup →](examples/README.md#longer-examples)
 
 ## Platforms and memory
 
-Use a matching 64-bit Java runtime (Java 8+; Fiji normally supplies one). CPU mode needs no GPU driver. GPU mode needs the GPU vendor's OpenCL driver. Native JOCL bindings for Windows, macOS and Linux are packaged, but packaging is not proof of hardware compatibility. Local release testing is on Linux/RTX 5090; run the bundled compatibility check on your own machine.
+Requires 64-bit Java 8+ (included with Fiji). Windows, macOS and Linux bindings are bundled. GPU mode requires an OpenCL driver; run the compatibility check on your machine.
 
-Selected frames are loaded into RAM as float32 pixels (4 bytes per pixel). Request a shorter range for large recordings. The opener rejects an estimated output larger than one third of the ImageJ heap, leaving space for decoder workspaces; this is a guard, not a guarantee that every image fits. Neural workspace and temporal history also scale with XY.
+Selected frames are loaded into RAM as float32 pixels (4 bytes per pixel). The plugin limits output to one third of the ImageJ heap to leave room for decoder workspace. If a range exceeds this limit, reduce it or increase the heap.
 
-**Fast (full frame)** is the default. Optional **Low VRAM (512/256-pixel tiles)** uses the same files and output arithmetic, but moves intermediate state through system RAM and can be substantially slower. It is a fallback, not a speed optimization, and does not reduce total system RAM use. For 2048² images in this mode, an 8-GiB Java heap and sufficient free RAM are recommended, not guaranteed to fit all models.
+**Fast (full frame)** is the default. **Low VRAM (512/256-pixel tiles)** reduces GPU memory use at the cost of speed and system RAM. For 2048² images in this mode, start with an 8-GiB Java heap; requirements depend on the model and selected range.
 
 ## Data integrity
 
 The built-in compatibility check compares decoded float32 values with independently generated CUDA reference hashes.
 
-Only open trusted archives. Integrity hashes detect corruption, not authenticity; this is research software, not a security-audited parser for hostile inputs.
+Only open trusted archives; integrity hashes detect corruption, not authenticity.
 
 ## Build from source
 
-Building requires a JDK 9+ and Python (optionally Eclipse ECJ); **end users do not need these build tools**. Both compiler paths use `--release 8` to restrict Java APIs as well as bytecode to Java 8. Download these Maven artifacts into `deps/`, using the filenames shown:
+Requires a JDK 9+ and Python (optionally Eclipse ECJ). Builds target Java 8 with `--release 8`. Download these Maven artifacts into `deps/`:
 
 | Filename | Maven coordinates |
 |---|---|
@@ -69,5 +67,3 @@ Supply ImageJ's `ij.jar` separately; it is not bundled into the plugin.
 python imagej/build.py --deps deps --ij /path/to/ij.jar --out imagej/build
 # Optional: --ecj /path/to/ecj.jar instead of javac
 ```
-
-The source includes the small numerical self-check fixtures and third-party license texts. The synthetic current-format fixture is for compatibility testing, not a microscopy performance benchmark.

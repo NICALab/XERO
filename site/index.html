@@ -10,8 +10,8 @@
   <meta property="og:description" content="Compact images. Explicit error bounds. On-demand decoding for microscopy data sharing.">
   <meta property="og:type" content="website">
   <link rel="icon" type="image/svg+xml" href="assets/mark.svg">
-  <link rel="stylesheet" href="style.css?v=20261028-viewer-ratio">
-  <script src="app.js" defer></script>
+  <link rel="stylesheet" href="style.css?v=20261028-image-drag">
+  <script src="app.js?v=20261028-image-drag" defer></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -64,11 +64,11 @@
         <div class="compare-tools" role="group" aria-label="Comparison magnification"><button type="button" class="selected" data-zoom="1" aria-pressed="true">Full frame</button><button type="button" data-zoom="2" aria-pressed="false">2× detail</button></div>
         <p class="comparison-note">Mouse two-photon calcium · 1% bound<br>Same frame, LUT and intensity limits.</p>
       </div>
-      <figure class="comparison-figure"><div class="comparison" id="comparison" style="--split:50%;--zoom:1">
+      <figure class="comparison-figure"><div class="comparison" id="comparison" style="--split:50%;--zoom:1" role="slider" tabindex="0" aria-label="Compare denoised and XERO images" aria-orientation="horizontal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-valuetext="50% denoised, 50% XERO" aria-describedby="comparison-help">
         <div class="compare-layer base"><img src="assets/compare-xero.png" alt="XERO reconstruction of the selected mouse two-photon frame" width="496" height="496" loading="lazy"></div>
         <div class="compare-layer clipped"><img src="assets/compare-denoised.png" alt="Denoised input at the identical frame and display range" width="496" height="496" loading="lazy"></div>
         <span class="image-label left">Denoised</span><span class="image-label right">XERO · 1%</span><div class="split-line" aria-hidden="true"><span>↔</span></div>
-      </div><figcaption><label for="comparison-range">Drag to compare</label><input id="comparison-range" type="range" min="0" max="100" value="50" aria-label="Denoised image coverage" aria-valuetext="50% denoised, 50% XERO"><span aria-hidden="true">↔</span></figcaption></figure>
+      </div><figcaption id="comparison-help">Drag on the image to compare · Use arrow keys when focused</figcaption></figure>
       <div class="trace-card"><div class="trace-heading"><div><p class="eyebrow">Measured ROI signal</p><h3>Two traces. Nearly one line.</h3></div><div class="trace-legend"><span><i class="denoised-key"></i>Denoised</span><span><i class="xero-key"></i>XERO · 1%</span></div></div><svg id="trace-plot" viewBox="0 0 1000 210" role="img" aria-label="Overlaid denoised and XERO fluorescence traces from one calcium ROI"><title>Measured calcium signal, denoised versus XERO</title></svg><p class="fine-print">One matched ROI · shared F₀ · approximately 30 seconds · ΔF/F₀ (%)</p></div>
     </div></section>
 

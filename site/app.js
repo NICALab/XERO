@@ -80,10 +80,48 @@ $$('.tabs button').forEach((button,i,buttons) => {
   });
 });
 
-const range=$('#comparison-range');
-range.addEventListener('input',()=>{
-  $('#comparison').style.setProperty('--split',range.value+'%');
-  range.setAttribute('aria-valuetext',`${range.value}% denoised, ${100-Number(range.value)}% XERO`);
+const comparison=$('#comparison');
+let comparisonPointer=null;
+function setComparison(value) {
+  const split=Math.max(0,Math.min(100,value));
+  comparison.style.setProperty('--split',split+'%');
+  comparison.setAttribute('aria-valuenow',String(Math.round(split)));
+  comparison.setAttribute('aria-valuetext',`${Math.round(split)}% denoised, ${100-Math.round(split)}% XERO`);
+}
+function moveComparison(event) {
+  const rect=comparison.getBoundingClientRect();
+  if(rect.width>0)setComparison(100*(event.clientX-rect.left)/rect.width);
+}
+comparison.addEventListener('pointerdown',event=>{
+  if(!event.isPrimary || event.button!==0 || comparisonPointer!==null)return;
+  comparisonPointer=event.pointerId;
+  comparison.focus({preventScroll:true});
+  comparison.setPointerCapture(event.pointerId);
+  comparison.classList.add('dragging');
+  moveComparison(event);
+});
+comparison.addEventListener('pointermove',event=>{
+  if(event.pointerId===comparisonPointer)moveComparison(event);
+});
+function finishComparison(event) {
+  if(event.pointerId!==comparisonPointer)return;
+  comparisonPointer=null;
+  comparison.classList.remove('dragging');
+  if(comparison.hasPointerCapture(event.pointerId))comparison.releasePointerCapture(event.pointerId);
+}
+comparison.addEventListener('pointerup',event=>{
+  if(event.pointerId===comparisonPointer)moveComparison(event);
+  finishComparison(event);
+});
+comparison.addEventListener('pointercancel',finishComparison);
+comparison.addEventListener('lostpointercapture',finishComparison);
+comparison.addEventListener('dragstart',event=>event.preventDefault());
+comparison.addEventListener('keydown',event=>{
+  const value=parseFloat(comparison.style.getPropertyValue('--split'));
+  const step=event.shiftKey?10:1;
+  const next={ArrowLeft:value-step,ArrowDown:value-step,ArrowRight:value+step,ArrowUp:value+step,Home:0,End:100}[event.key];
+  if(next===undefined)return;
+  event.preventDefault();setComparison(next);
 });
 $$('[data-zoom]').forEach(button=>button.addEventListener('click',()=>{
   $('#comparison').style.setProperty('--zoom',button.dataset.zoom);

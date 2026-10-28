@@ -30,6 +30,15 @@ Choose one of these short biological recordings:
 
 Both examples contain the original compressed packets and the required decoder model. No training, Python installation or additional model download is required. [Example details](examples/README.md). To download a different recording or range without decompressing it, use the [Python archive downloader](../docs/download.md).
 
+### Longer examples
+
+| Example | Frames | ZIP size | Bound |
+|---|---:|---:|---:|
+| [OpenScope dendritic calcium (longer)](examples/XERO_OpenScope_Longer.zip) | 5,120 | 99.95 MB | 1% |
+| [Zebrafish spinal-cord voltage (longer)](examples/XERO_Spinal_Cord_Longer.zip) | 8,192 | 99.58 MB | 0.5% |
+
+Unzip and select the extracted folder as above. Open frames **1–5120** or **1–8192** respectively, or any smaller range. Each full example expands to approximately **5 GB of float32 pixels in RAM**, plus workspace. Opening all frames requires sufficient free RAM and an ImageJ Java heap of **16 GiB** under the plugin's memory guard; see the [memory setup and exact sizes](examples/README.md#longer-examples). Both ZIPs are below 100,000,000 bytes.
+
 ## Platforms and memory
 
 Use a matching 64-bit Java runtime (Java 8+; Fiji normally supplies one). CPU mode needs no GPU driver. GPU mode needs the GPU vendor's OpenCL driver. Native JOCL bindings for Windows, macOS and Linux are packaged, but packaging is not proof of hardware compatibility. Local release testing is on Linux/RTX 5090; run the bundled compatibility check on your own machine.

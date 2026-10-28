@@ -1,15 +1,28 @@
 # Try biological imaging data
 
-Two short excerpts from the compressed datasets served by the XERO viewer:
+Short and longer excerpts from the compressed datasets served by the XERO viewer:
 
 | File | Imaging modality | Dimensions (width × height × frames) | Bound |
 |---|---|---|---:|
 | [XERO_OpenScope.zip](XERO_OpenScope.zip) | Mouse dendritic calcium, OpenScope sub-412933 | 496 × 496 × 128 | 1% |
 | [XERO_Spinal_Cord.zip](XERO_Spinal_Cord.zip) | Zebrafish spinal-cord voltage | 1024 × 148 × 128 | 0.5% |
 
+### Longer examples
+
+Each ZIP is below **100 MB** (100,000,000 bytes) and contains a continuous recording excerpt, not repeated frames.
+
+| Example | Frames | ZIP download | Decoded float32 pixels | Bound |
+|---|---:|---:|---:|---:|
+| [OpenScope dendritic calcium (longer)](XERO_OpenScope_Longer.zip) | 5,120 | 99.95 MB | 5.04 GB | 1% |
+| [Zebrafish spinal-cord voltage (longer)](XERO_Spinal_Cord_Longer.zip) | 8,192 | 99.58 MB | 4.97 GB | 0.5% |
+
+The longer excerpts use the same frame sizes as the short examples. MB and GB here are decimal units. Unzipping leaves the images compressed; the float32 memory is needed when opening them in ImageJ.
+
 Open the file page and click **Download raw file** (download icon), then unzip it. If the repository is private, GitHub requires an authorized login.
 
-In Fiji/ImageJ choose **Plugins → Compression (XERO) → Open compressed image**, select the extracted `XERO_OpenScope` or `XERO_Spinal_Cord` folder, and open frames **1–128**. Use **Auto** or **GPU / OpenCL** when available. CPU also works, but is slower. Selected frames are loaded into RAM: approximately 126 MB and 78 MB of float32 pixels respectively, plus decoder workspace.
+In Fiji/ImageJ choose **Plugins → Compression (XERO) → Open compressed image**, select the extracted archive folder, and choose a frame range. For a quick check, open frames **1–128**. For the complete longer examples, choose **1–5120** (OpenScope) or **1–8192** (spinal cord). Use **Auto** or **GPU / OpenCL** when available. CPU also works, but is slower. The first 128 frames require approximately 126 MB and 78 MB of float32 pixels respectively, plus decoder workspace.
+
+**Opening the entire longer example:** allow a **16 GiB Java heap** (16,384 MB in ImageJ's **Edit → Options → Memory & Threads**, then restart), provided your computer has sufficient free RAM. The plugin reserves headroom by limiting the selected output to one third of the heap. Alternatively, open a smaller frame range; there is no need to decode the whole example. Workspace and ImageJ overhead are additional to the pixel sizes above.
 
 These are reconstructed, previously denoised recordings, not raw/noisy movies. Each ZIP includes `manifest.json`, `model.npz` and the required entropy packets. No training or additional model download is needed. Source compressed model and packet bytes are unchanged; only the manifest is restricted to the excerpt. A tiny excerpt's model overhead is not representative of full-recording compression ratios.
 

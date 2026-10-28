@@ -35,6 +35,44 @@
         128
       ],
       "model_sha256": "c7f230fdf673b73fcb77f1dd637eb371ddea1eea5be25dddfce936ec7516d678"
+    },
+    {
+      "file": "XERO_OpenScope_Longer.zip",
+      "folder": "XERO_OpenScope_Longer",
+      "bytes": 99954417,
+      "sha256": "1d7a2a61b392b7bd6cd9a77d05371c684c8119f7a22665f056313dfe29f81c8c",
+      "shape_tyx": [
+        5120,
+        496,
+        496
+      ],
+      "tolerance": 0.01,
+      "dataset": "openscope496",
+      "source_range": [
+        0,
+        5120
+      ],
+      "model_sha256": "7cf32d3c5c1dbd614588d0c016aba7950059961d3c79a9a3ae7b53b3fe012ee6",
+      "decoded_float32_bytes": 5038407680
+    },
+    {
+      "file": "XERO_Spinal_Cord_Longer.zip",
+      "folder": "XERO_Spinal_Cord_Longer",
+      "bytes": 99576066,
+      "sha256": "67665b5901aca6b4a05697b4a17d6bb6e1135dfefe9d4d6796e72d29f598e7ff",
+      "shape_tyx": [
+        8192,
+        148,
+        1024
+      ],
+      "tolerance": 0.005,
+      "dataset": "full-0163f6d27114c850e101",
+      "source_range": [
+        0,
+        8192
+      ],
+      "model_sha256": "c7f230fdf673b73fcb77f1dd637eb371ddea1eea5be25dddfce936ec7516d678",
+      "decoded_float32_bytes": 4966055936
     }
   ]
 }

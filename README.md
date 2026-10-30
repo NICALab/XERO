@@ -31,6 +31,14 @@ XERO compresses microscopy movies and image stacks with a **pixelwise relative-e
 
 **napari:** Install the [XERO reader](docs/ome-zarr.md#napari), then open an `.ome.zarr` folder to browse frames on demand with CPU or OpenCL GPU decoding.
 
+Already using napari? Activate the **same Python/conda environment as napari** and install only the XERO reader:
+
+```bash
+python -m pip install "xero-microscopy[napari] @ https://xero-viewer.pages.dev/downloads/xero_microscopy-0.3.0-py3-none-any.whl"
+```
+
+Restart napari, open the `.ome.zarr` folder and select **XERO**. This requires Python 3.11+ and Java 8+ for CPU/OpenCL decoding; you do not need to install another Qt backend. If you do not have napari yet, follow the [new installation instructions](docs/ome-zarr.md#new-napari-installation).
+
 Try **[OpenScope calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_OME_Zarr.zip)** or **[spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_OME_Zarr.zip)** in either desktop viewer. Unzip each download to obtain its `.ome.zarr` folder.
 
 Longer examples: **[OpenScope dendritic calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_Longer_OME_Zarr.zip)** — **5,120 frames**; **[zebrafish spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_Longer_OME_Zarr.zip)** — **8,192 frames**. See [download sizes and ImageJ memory requirements](imagej/examples/README.md#longer-examples).

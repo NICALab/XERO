@@ -5,9 +5,27 @@ Open the same compressed image in the browser, ImageJ, napari or Python.
 
 ## napari
 
+XERO requires Python 3.11 or newer.
+
+### Existing napari installation
+
+Activate the **same Python/conda environment as your napari installation** and add the XERO reader:
+
+```bash
+python -m pip install "xero-microscopy[napari] @ https://xero-viewer.pages.dev/downloads/xero_microscopy-0.3.0-py3-none-any.whl"
+```
+
+Restart napari after installation. You do not need to reinstall napari or add a second Qt backend. The command installs XERO and its required dependencies; an environment with incompatible dependency versions may need updates. For an older Python environment, use a separate Python 3.11+ environment instead.
+
+### New napari installation
+
+In a Python 3.11+ environment without napari, install both napari and XERO:
+
 ```bash
 python -m pip install "napari[pyqt6]" "xero-microscopy[napari] @ https://xero-viewer.pages.dev/downloads/xero_microscopy-0.3.0-py3-none-any.whl"
 ```
+
+### Open an image
 
 Java 8 or newer is required for CPU/OpenCL decoding. The wheel includes the
 decoder JAR. If Java is not on your PATH, set `XERO_JAVA` to a Java executable

@@ -44,7 +44,21 @@ def manifest(folder):
     return m
 
 
-def encode(input, checkpoint, output, key='data', restart=None, device='cuda:0'):
+def encode(input, checkpoint, output, key='data', restart=None, device='cuda:0',
+           axis='t', output_format='ome-zarr'):
+    """Encode once, audit pixels, and write restart chunks directly to OME-Zarr."""
+    from contextlib import nullcontext
+    output = Path(output)
+    if output.exists() or output.is_symlink():
+        raise FileExistsError(f'Refusing to overwrite {output}')
+    if output_format not in ('ome-zarr', 'native') or axis not in ('t', 'z'):
+        raise ValueError('Specify format ome-zarr/native and axis t/z')
+    checkpoint = Path(checkpoint)
+    if not checkpoint.is_file():
+        raise FileNotFoundError(checkpoint)
+    if output_format == 'ome-zarr':
+        from .omezarr.writer import RestartWriter
+
     cuda(device)
     import torch
     import reassessment_codec as rc
@@ -52,63 +66,84 @@ def encode(input, checkpoint, output, key='data', restart=None, device='cuda:0')
     from large_fov_restart import SingleGroupSource, encode_segments
     from integer_archive import serialized_profile
     from release_utils import write_json
-    output=Path(output)
-    if output.exists():
-        raise FileExistsError(f'Refusing to overwrite {output}')
-    checkpoint=Path(checkpoint)
-    if not checkpoint.is_file(): raise FileNotFoundError(checkpoint)
+
     with source(input,key) as array, torch.inference_mode():
-        n,h,w=array.shape
-        k=rc.interval(h,w) if restart is None else restart
-        if type(k) is not int or k<128 or k&(k-1):
+        n,h,w = array.shape
+        k = rc.interval(h,w) if restart is None else restart
+        if type(k) is not int or k < 128 or k & (k-1):
             raise ValueError('Restart must be a power of two >=128')
-        output.mkdir(parents=True)
-        (output/'INCOMPLETE').write_text('Only archives with manifest.json are complete.\n')
-        groups=[]
-        with rc.Codec(checkpoint,output) as codec:
+        if output_format == 'native':
+            output.mkdir(parents=True)
+            (output/'INCOMPLETE').write_text('Only archives with manifest.json are complete.\n')
+        # Only the small exported model is temporary. Compressed image packets
+        # go straight to their final chunk, after the independent pixel audit.
+        model_context = (tempfile.TemporaryDirectory(prefix='xero-encode-model-')
+                         if output_format == 'ome-zarr' else nullcontext(output))
+        with model_context as model_folder, rc.Codec(checkpoint,model_folder) as codec:
+            model = Path(model_folder)/'model.npz'
+            m = dict(profile=serialized_profile(model), shape=[n,h,w], restart=k,
+                model='model.npz', model_sha256=digest(model), groups=[],
+                history='repeat_first_decoded', tolerance=codec.epsilon)
+            writer = (RestartWriter(output,m,model.read_bytes(),axis=axis)
+                      if output_format == 'ome-zarr' else None)
+            groups = m['groups']
             for start in range(0,n,k):
-                x=np.array(array[start:min(n,start+k)],dtype='float32',order='C',copy=True)
-                if not np.isfinite(x).all(): raise ValueError('Nonfinite input is not supported')
-                host=torch.empty(x.shape,dtype=torch.float32,pin_memory=True)
+                x = np.array(array[start:min(n,start+k)],dtype='float32',order='C',copy=True)
+                if not np.isfinite(x).all():
+                    raise ValueError('Nonfinite input is not supported')
+                host = torch.empty(x.shape,dtype=torch.float32,pin_memory=True)
                 host.copy_(torch.from_numpy(x))
-                src=(SingleGroupSource if h*w>=1_000_000 else PinnedSource)(host)
-                rt=codec.encoder((h,w))
-                segments,blob,_=encode_segments(rt,src,k)
+                src = (SingleGroupSource if h*w >= 1_000_000 else PinnedSource)(host)
+                rt = codec.encoder((h,w))
+                segments,blob,_ = encode_segments(rt,src,k)
                 del src,host,blob,rt
-                if h*w>=1_000_000: codec.release_encoder()
-                packets=segments[0][2]
-                reader=codec.receiver((h,w))
-                count=0
+                if h*w >= 1_000_000:
+                    codec.release_encoder()
+                packets = segments[0][2]
+                reader = codec.receiver((h,w))
+                count = 0
                 for i,rec in reader.decoded_frames(packets,len(x)):
-                    count+=1
-                    y=rec[0,0].cpu().numpy()
+                    count += 1
+                    y = rec[0,0].cpu().numpy()
                     if bound_violations(x[i],y,codec.epsilon):
                         raise RuntimeError(f'Bound validation failed at frame {start+i}')
-                if count!=len(x): raise RuntimeError('Incomplete independent verification')
+                if count != len(x):
+                    raise RuntimeError('Incomplete independent verification')
                 del reader,rec,y
-                if h*w>=1_000_000: codec.release_reader()
-                offset=start
+                if h*w >= 1_000_000:
+                    codec.release_reader()
+                offset = start
+                records = []
                 for wrapped in packets:
-                    payload=wrapped[8:]
-                    _,frames,ph,pw,*_=rc.sequence_codec.HEADER.unpack_from(payload)
-                    assert (ph,pw)==(h,w)
-                    name=f'group_{len(groups):06d}.bin'
-                    (output/name).write_bytes(payload)
-                    groups.append(dict(file=name,start=offset,frames=frames,bytes=len(payload),sha256=hashlib.sha256(payload).hexdigest()))
-                    offset+=frames
-                del segments,packets,x
+                    payload = memoryview(wrapped)[8:]
+                    _,frames,ph,pw,*_ = rc.sequence_codec.HEADER.unpack_from(payload)
+                    if (ph,pw) != (h,w):
+                        raise ValueError('Packet geometry mismatch')
+                    name = f'group_{len(groups):06d}.bin'
+                    g = dict(file=name,start=offset,frames=frames,bytes=len(payload),
+                             sha256=hashlib.sha256(payload).hexdigest())
+                    groups.append(g)
+                    if writer is None:
+                        (output/name).write_bytes(payload)
+                    else:
+                        records.append((g,payload))
+                    offset += frames
+                if writer is not None:
+                    writer.append(start,records)
+                del records,payload,wrapped,segments,packets,x
                 print(json.dumps(dict(encoded=min(n,start+k),total=n,violations=0)),flush=True)
-            m=dict(profile=serialized_profile(output/'model.npz'),shape=[n,h,w],restart=k,
-                model='model.npz',model_sha256=digest(output/'model.npz'),groups=groups,
-                history='repeat_first_decoded',tolerance=codec.epsilon)
-        write_json(output/'manifest.json',m)
-        (output/'INCOMPLETE').unlink()
-        total=sum(g['bytes'] for g in groups)+(output/'model.npz').stat().st_size+(output/'manifest.json').stat().st_size
-        result=dict(shape=[n,h,w],source_dtype=str(array.dtype),source_bytes=n*h*w*array.dtype.itemsize,
-            float32_bytes=n*h*w*4,compressed_bytes=total,compression_ratio=n*h*w*array.dtype.itemsize/total,
-            uint16_equivalent_ratio=n*h*w*2/total,tolerance=m['tolerance'],verified_pixels=n*h*w,violations=0)
-        write_json(output/'encode_report.json',result)
-        return result
+            report = dict(shape=[n,h,w],source_dtype=str(array.dtype),
+                source_bytes=n*h*w*array.dtype.itemsize,float32_bytes=n*h*w*4,
+                tolerance=m['tolerance'],verified_pixels=n*h*w,violations=0)
+            if writer is not None:
+                return writer.finish(report)
+            write_json(output/'manifest.json',m)
+            total = sum(g['bytes'] for g in groups)+model.stat().st_size+(output/'manifest.json').stat().st_size
+            result = dict(report,compressed_bytes=total,
+                compression_ratio=report['source_bytes']/total,uint16_equivalent_ratio=n*h*w*2/total)
+            write_json(output/'encode_report.json',result)
+            (output/'INCOMPLETE').unlink()
+            return result
 
 
 def frames(folder, start=0, stop=None, device='cuda:0'):

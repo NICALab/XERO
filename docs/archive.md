@@ -12,7 +12,7 @@ Each chunk contains one independent restart segment, comprising entropy packets 
 
 Random access starts at the preceding restart. Partial requests finish the consumed entropy packet for validation. Python yields one float32 frame at a time for on-demand analysis.
 
-The encoder stages one restart block at a time in host RAM, verifies every pixel with an independent decoder, then writes packet files. The `xero repack` export step wraps those unchanged packets in OME-Zarr chunks. The destination becomes visible only after export completes. Existing output directories/files are refused rather than overwritten.
+The encoder stages one restart block at a time in host RAM, verifies every pixel with an independent decoder, then writes the verified packets directly into an OME-Zarr chunk. No intermediate packet-file archive or second export pass is needed. The destination becomes visible only after encoding completes. Existing output directories/files are refused rather than overwritten. Interrupted runs leave a separate `.incomplete-*` staging directory, not a completed image. Reported compressed bytes include the embedded model, OME-Zarr metadata and chunks, but exclude `encode_report.json` and filesystem overhead.
 
 The encoder's `encode_report.json` counts packets, model and manifest bytes, excluding the report and filesystem overhead. `compression_ratio` uses the input dtype; `uint16_equivalent_ratio` uses two bytes per pixel. OME-Zarr metadata and chunk headers add container overhead; use the actual exported size when reporting stored bytes.
 

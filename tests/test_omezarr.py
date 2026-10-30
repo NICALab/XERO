@@ -35,6 +35,63 @@ def test_packets_and_model_unchanged(pair):
     assert meta['attributes']['xero']['complete']
 
 
+@pytest.mark.parametrize('axis', ['t', 'z'])
+def test_direct_writer_matches_repack(pair, tmp_path, axis):
+    from xero.omezarr.writer import RestartWriter
+    native, repacked = pair
+    m = json.loads((native/'manifest.json').read_text())
+    groups = m.pop('groups'); m['groups'] = []
+    output = tmp_path/'direct.ome.zarr'
+    writer = RestartWriter(output, m, (native/'model.npz').read_bytes(), axis=axis)
+    assert not output.exists()
+    with pytest.raises(ValueError, match='incomplete'):
+        writer.finish({})
+    for origin in range(0, m['shape'][0], m['restart']):
+        packets = [(g, memoryview((native/g['file']).read_bytes())) for g in groups
+                   if origin <= g['start'] < origin+m['restart']]
+        writer.append(origin, packets)
+        assert not output.exists()
+    with pytest.raises(ValueError, match='order'):
+        writer.append(0, packets)
+    report = writer.finish(dict(source_bytes=160*64*64*2, float32_bytes=160*64*64*4))
+    s = Source(output)
+    assert open_image(output).metadata.dimension_names == (axis, 'y', 'x')
+    assert s.model == (native/'model.npz').read_bytes()
+    for chunk in writer.chunks:
+        assert (output/chunk['key']).read_bytes() == (repacked/chunk['key']).read_bytes()
+    for g in s.manifest['groups']:
+        assert s.packet(g) == (native/g['file']).read_bytes()
+    assert not list(output.glob('group_*.bin')) and not (output/'model.npz').exists()
+    assert report['compressed_bytes'] == sum(p.stat().st_size for p in output.rglob('*')
+        if p.is_file() and p.name != 'encode_report.json')
+    with pytest.raises(FileExistsError):
+        RestartWriter(output, m, s.model, axis=axis)
+
+
+def test_direct_writer_rejects_damaged_packet(pair, tmp_path):
+    from xero.omezarr.writer import RestartWriter
+    native, _ = pair
+    m = json.loads((native/'manifest.json').read_text())
+    groups = m.pop('groups'); m['groups'] = []
+    writer = RestartWriter(tmp_path/'bad.ome.zarr', m, (native/'model.npz').read_bytes(), axis='t')
+    g = groups[0]; b = bytearray((native/g['file']).read_bytes()); b[-1] ^= 1
+    with pytest.raises(ValueError, match='packet'):
+        writer.append(0, [(g, b)])
+    assert writer.position == 0 and not writer.output.exists()
+    assert not json.loads((writer.stage/'zarr.json').read_text())['attributes']['xero']['complete']
+
+
+def test_encode_cli_defaults_to_direct_ome(monkeypatch):
+    import sys
+    from xero import archive, cli
+    calls = []
+    monkeypatch.setattr(archive, 'encode', lambda **kw: calls.append(kw) or {})
+    monkeypatch.setattr(sys, 'argv', ['xero','encode','--input','input.h5',
+        '--checkpoint','model.pt','--output','movie.ome.zarr','--axis','t'])
+    cli.main()
+    assert calls[0]['output_format'] == 'ome-zarr' and calls[0]['axis'] == 't'
+
+
 def test_missing_is_not_fill(pair):
     _,ome=pair
     (ome/'0/c/0/0/0').rename(ome/'missing')

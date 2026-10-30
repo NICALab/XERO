@@ -31,10 +31,10 @@ Encode the calibration recording(s) with candidate checkpoints in separate outpu
 
 ```bash
 xero encode --input outputs/bank/record000_calibration.h5 \
-  --checkpoint outputs/model_1pct/latest.pt --output outputs/calibration_latest
+  --checkpoint outputs/model_1pct/latest.pt --output outputs/calibration_latest.ome.zarr --axis t
 ```
 
-Compare actual compressed sizes, including model and manifest. Freeze the chosen checkpoint **before** encoding `record000_test.h5`. Do not tune on the test compression ratio or downstream metric. Use the same input dtype and accounting basis in comparisons; float32 and uint16-equivalent ratios differ by 2× for identical pixels and bytes.
+Compare actual compressed sizes, including model and OME-Zarr metadata. Use `--axis z` for structural stacks. Freeze the chosen checkpoint **before** encoding `record000_test.h5`. Do not tune on the test compression ratio or downstream metric. Use the same input dtype and accounting basis in comparisons; float32 and uint16-equivalent ratios differ by 2× for identical pixels and bytes.
 
 The checkpoint fixes the tolerance. For 1%, 5% and 20%, train/select separate checkpoints at `0.01`, `0.05` and `0.20`. Integer model export occurs during `xero encode`, which independently verifies the reconstruction before completing the archive. Do not bypass a failed reconstruction check.
 

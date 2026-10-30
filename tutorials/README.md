@@ -9,7 +9,7 @@ Run commands from the repository root after [installation](../docs/installation.
 | [`03_stream_roi.py`](03_stream_roi.py) | Measure an ROI without saving a decompressed movie | A supported archive + CUDA |
 | [`04_package_imagej_example.py`](04_package_imagej_example.py) | Package an OME-Zarr image as a shareable ZIP | An encoded image + Zarr extras |
 | [`05_download_compressed.py`](05_download_compressed.py) | Select a public dataset and frame range; download compressed files only | Python standard library, no GPU |
-| [`06_ome_zarr.py`](06_ome_zarr.py) | Repackage an archive as OME-Zarr and read a small ROI | Zarr extras and Java 8+ or the CUDA decoder |
+| [`06_ome_zarr.py`](06_ome_zarr.py) | Read a small ROI from OME-Zarr without exporting a TIFF | Java 8+ or the CUDA decoder |
 | [ImageJ walkthrough](../imagej/README.md) | Open biological examples, CPU/GPU selection and compatibility checks | ImageJ/Fiji |
 | [OME-Zarr and napari](../docs/ome-zarr.md) | Open compressed arrays in Python, napari, ImageJ and the browser | XERO codec/reader |
 

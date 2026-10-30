@@ -85,13 +85,12 @@ xero train --bank outputs/bank --out outputs/model \
   --steps 50000 --tolerance 0.01 --history 64 --rollout 64 \
   --patch 128 --batch 8 --tiles 8 --refresh 500 --compile --skip-short-audits
 xero encode --input denoised.h5 --checkpoint outputs/model/latest.pt \
-  --output outputs/compressed
-xero repack --archive outputs/compressed --output outputs/movie.ome.zarr --axis t
+  --output outputs/movie.ome.zarr --axis t
 xero decode --archive outputs/movie.ome.zarr --output outputs/reconstructed.tif
 xero verify --archive outputs/movie.ome.zarr --input denoised.h5
 ```
 
-`--tolerance 0.01` means **1%**. Use `--axis z` when exporting a structural stack. The bound is fixed by the checkpoint. Adjust batch and patch sizes to your GPU memory, and select a checkpoint using calibration data. [Training guide →](docs/training.md)
+`--tolerance 0.01` means **1%**. Encoding writes OME-Zarr directly; use `--axis z` for a structural stack. The bound is fixed by the checkpoint. Adjust batch and patch sizes to your GPU memory, and select a checkpoint using calibration data. [Training guide →](docs/training.md)
 
 ## What is guaranteed?
 

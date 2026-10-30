@@ -9,7 +9,6 @@ xero train --bank outputs/demo/bank --out outputs/demo/model \
   --width 32 --refiner-width 16 --patch 32 --batch 2 --tiles 2 \
   --refresh 10 --skip-short-audits
 xero encode --input outputs/demo/input.h5 --checkpoint outputs/demo/model/latest.pt \
-  --output outputs/demo/archive --restart 128
-xero repack --archive outputs/demo/archive --output outputs/demo/movie.ome.zarr --axis t
+  --output outputs/demo/movie.ome.zarr --restart 128 --axis t
 xero decode --archive outputs/demo/movie.ome.zarr --output outputs/demo/reconstructed.h5
 xero verify --archive outputs/demo/movie.ome.zarr --input outputs/demo/input.h5

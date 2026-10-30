@@ -6,7 +6,7 @@ Open the same compressed image in the browser, ImageJ, napari or Python.
 ## napari
 
 ```bash
-python -m pip install "napari[pyqt6]" "xero-microscopy[napari] @ https://xero-viewer.pages.dev/downloads/xero_microscopy-0.2.0-py3-none-any.whl"
+python -m pip install "napari[pyqt6]" "xero-microscopy[napari] @ https://xero-viewer.pages.dev/downloads/xero_microscopy-0.3.0-py3-none-any.whl"
 ```
 
 Java 8 or newer is required for CPU/OpenCL decoding. The wheel includes the
@@ -35,7 +35,7 @@ no fully decompressed volume is written to disk.
 For array access without the napari GUI:
 
 ```bash
-python -m pip install "xero-microscopy[zarr] @ https://xero-viewer.pages.dev/downloads/xero_microscopy-0.2.0-py3-none-any.whl"
+python -m pip install "xero-microscopy[zarr] @ https://xero-viewer.pages.dev/downloads/xero_microscopy-0.3.0-py3-none-any.whl"
 ```
 
 ```python
@@ -90,18 +90,16 @@ Requested output is limited to 256 MiB per chunk. Zarr also allocates the total
 requested array, so read large recordings in small ranges rather than
 `image[:]`. napari uses one frame per lazy task.
 
-## Export your compressed data
+## Compress your data
 
 ```bash
-python -m pip install -e '.[zarr]'
-xero repack --archive outputs/compressed --output outputs/movie.ome.zarr --axis t
+xero encode --input denoised.h5 --checkpoint outputs/model/latest.pt \
+  --output outputs/movie.ome.zarr --axis t
 # Use --axis z for a structural z-stack.
 ```
 
-The destination must not exist. Export preserves the compressed packets and
-model without re-encoding. Frame axes are explicit; physical pixel sizes are
-not guessed. The Python `repack_archive` API accepts `scale` and `units`
-in frame–y–x order.
+The encoder writes verified restart chunks directly to OME-Zarr. The destination
+must not exist. Frame axes are explicit; physical pixel sizes are not guessed.
 
 ## Layout and integrity
 
@@ -123,6 +121,6 @@ error rather than returning a blank frame. Hashes provide integrity, not
 source authenticity; open trusted datasets only.
 
 Array reading and compressed export are supported. Assigning new pixels with
-`image[...] = ...` does not encode them; use `xero encode` and `xero repack`.
+`image[...] = ...` does not encode them; use `xero encode`.
 
 [OME-NGFF specification →](https://ngff.openmicroscopy.org/0.5/)

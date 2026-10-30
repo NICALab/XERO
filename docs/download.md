@@ -32,7 +32,7 @@ The download includes complete restart chunks. For OpenScope, requesting `[100, 
 
 The `.ome.zarr` folder contains array metadata, compressed chunks and `download.json`. The last file records the requested source range, actually stored range, zero-based local range, and one-based inclusive ImageJ range. In that example, the requested images are local ImageJ frames **101–200**. When the source start is a later I-frame, local frame 1 corresponds to that I-frame rather than source frame 0.
 
-Open the downloaded folder in **Plugins → Compression (XERO) → Open compressed image**, or use [napari or Python](ome-zarr.md).
+Open the downloaded folder in [ImageJ](../imagej/README.md), [napari](../napari/README.md) or [Python](python.md).
 
 ## Call from Python
 
@@ -50,7 +50,7 @@ result = api["download_ome_zarr"](
 print(result["stored_source_range"])
 ```
 
-## Integrity and interrupted downloads
+## Interrupted downloads
 
 Files are checked against their SHA-256 hashes before final metadata is written.
 Use a new empty output directory. Interrupted OME-Zarr subset downloads do not

@@ -1,43 +1,33 @@
-# Installation
+# CUDA CLI installation
 
-## Choose your interface
+Training, encoding and native CUDA decoding require **Python 3.11+ on Linux**, an **NVIDIA GPU**, CUDA-enabled PyTorch, a matching CUDA development toolkit (`nvcc`) and a C++17 compiler.
 
-| Interface | Install | Compute |
-|---|---|---|
-| [Hosted browser](https://xero-viewer.pages.dev/xero/) | None | WebGPU, with browser CPU fallback |
-| [ImageJ/Fiji](../imagej/README.md) | One JAR | Java CPU; optional OpenCL GPU |
-| [napari](ome-zarr.md#napari) | XERO reader + napari + Java 8+ | CPU; optional OpenCL GPU |
-| Python CLI | This package + CUDA-enabled PyTorch/toolchain | NVIDIA CUDA |
+For viewing without CUDA, use [ImageJ](../imagej/README.md), [napari](../napari/README.md) or the [Python reader](python.md).
 
-## Python environment
-
-Use Python 3.11+ on Linux with CUDA-enabled PyTorch, a matching CUDA development toolkit (`nvcc`), a C++17 compiler and Ninja.
+## Install
 
 ```bash
+git clone https://github.com/NICALab/XERO.git
+cd XERO
 python -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
-# Install your compatible CUDA PyTorch build here.
-python -m pip install -e '.[train,test,zarr]'
+# Install a CUDA-enabled PyTorch build matching your GPU and toolkit.
+python -m pip install -e '.[train,test]'
 python -c 'import torch; print(torch.__version__, torch.cuda.is_available())'
 nvcc --version
 xero --help
 ```
 
-Tested environment: Python 3.12.13, PyTorch 2.13.0+cu130, CUDA 13.0, Triton 3.7.1 and RTX 5090. Check Triton with `python -c 'import triton'`.
+Tested environment: Python 3.12.13, PyTorch 2.13.0+cu130, CUDA 13.0, Triton 3.7.1 and RTX 5090.
 
-Set `CUDA_HOME` if multiple CUDA toolkits are installed. The first encode/decode compiles CUDA/Triton code and can take minutes; subsequent runs reuse compiler caches. Extension builds default to `MAX_JOBS=2`.
+The first encode/decode compiles CUDA/Triton code and may take minutes. Subsequent runs reuse compiler caches. Extension builds default to `MAX_JOBS=2`.
 
-For training, install the `train` extra (Matplotlib and TensorBoard). Supply raw or previously denoised images as input.
+## Troubleshooting
 
-## Memory
-
-Start with 32–128 pixel training patches and small batch/tile counts. Encoding preserves the original XY dimensions. GPU workspace grows with image area and model width; host staging is limited to one restart block.
-
-## Common problems
-
-- **Ninja/nvcc not found:** activate the intended environment, install the development tools, check `PATH` and `CUDA_HOME`.
-- **No CUDA device:** use the viewer/ImageJ for decoding, or run the CLI on an NVIDIA CUDA machine.
-- **Output already exists:** choose a new output directory. XERO does not overwrite an archive; a failed encode leaves an `INCOMPLETE` marker for inspection.
+- **Ninja/nvcc not found:** check the active environment, `PATH` and `CUDA_HOME`.
+- **No CUDA device:** check the PyTorch CUDA build and NVIDIA driver. Non-CUDA viewing options are linked above.
+- **Output already exists:** choose a new path. Interrupted encodes leave a separate `.incomplete-*` directory.
 - **TIFF not memory-mappable:** convert to uncompressed TIFF or HDF5.
-- **Out of memory:** reduce training batch/cache/patch size. In ImageJ, open a shorter frame range and optionally select the low-VRAM GPU fallback. In the browser, virtual loading is also available. A large native XY may still require more memory.
+- **Out of memory:** reduce training batch/tile/patch sizes. Encoding retains the original XY size and stages one restart block in host memory; a shorter `--restart` can reduce staging memory, but not full-frame GPU workspace.
+
+[Training guide](training.md) · [Tutorials](../tutorials/README.md)

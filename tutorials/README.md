@@ -1,35 +1,33 @@
 # Tutorials
 
-Run commands from the repository root after [installation](../docs/installation.md).
+Run from the repository root. See [CUDA installation](../docs/installation.md) for training/encoding, or [Python reading](../docs/python.md) for CPU/OpenCL access.
 
-| Tutorial | What you learn | Requires |
+| Tutorial | Task | Requires |
 |---|---|---|
-| [`01_make_demo.py`](01_make_demo.py) | Generate a reproducible fluorescence-like single-channel movie | Python, NumPy, HDF5 |
-| [`02_roundtrip.sh`](02_roundtrip.sh) | Prepare, train, encode, export OME-Zarr, decode and verify a 1% bound | NVIDIA CUDA + training/Zarr extras |
-| [`03_stream_roi.py`](03_stream_roi.py) | Measure an ROI without saving a decompressed movie | A supported archive + CUDA |
-| [`04_package_imagej_example.py`](04_package_imagej_example.py) | Package an OME-Zarr image as a shareable ZIP | An encoded image + Zarr extras |
-| [`05_download_compressed.py`](05_download_compressed.py) | Select a public dataset and frame range; download compressed files only | Python standard library, no GPU |
-| [`06_ome_zarr.py`](06_ome_zarr.py) | Read a small ROI from OME-Zarr without exporting a TIFF | Java 8+ or the CUDA decoder |
-| [ImageJ walkthrough](../imagej/README.md) | Open biological examples, CPU/GPU selection and compatibility checks | ImageJ/Fiji |
-| [OME-Zarr and napari](../docs/ome-zarr.md) | Open compressed arrays in Python, napari, ImageJ and the browser | XERO codec/reader |
+| [`01_make_demo.py`](01_make_demo.py) | Generate a synthetic movie | NumPy, HDF5 |
+| [`02_roundtrip.sh`](02_roundtrip.sh) | Train, encode, decode and verify | NVIDIA CUDA + training extra |
+| [`03_stream_roi.py`](03_stream_roi.py) | Stream an ROI signal to CSV | NVIDIA CUDA |
+| [`04_package_imagej_example.py`](04_package_imagej_example.py) | Package OME-Zarr as a ZIP | XERO Python package |
+| [`05_download_compressed.py`](05_download_compressed.py) | Download a dataset/frame range | Python standard library |
+| [`06_ome_zarr.py`](06_ome_zarr.py) | Read an ROI from OME-Zarr | Java 8+ or native CUDA |
+
+## Round trip and ROI analysis
 
 ```bash
 bash tutorials/02_roundtrip.sh
 python tutorials/03_stream_roi.py --archive outputs/demo/movie.ome.zarr \
   --roi 10 30 10 30 --output outputs/demo/roi.csv
+python tutorials/06_ome_zarr.py --archive outputs/demo/movie.ome.zarr --frame 100
 ```
 
-The round-trip tutorial uses synthetic data and ten training steps, writing to `outputs/demo/`. Choose a fresh output directory when rerunning. This is a workflow demonstration, not a compression benchmark.
+The round trip uses ten training steps and writes to `outputs/demo/`; it demonstrates the workflow, not compression performance. Use a fresh output directory when rerunning.
 
-To skip training, run `01_make_demo.py` and encode its output with `--checkpoint tutorials/demo_model.pt`. This checkpoint is trained on the synthetic example.
+To skip training, generate the input and use the supplied synthetic-data checkpoint:
 
-To inspect a subset without accumulating all frames:
-
-```python
-from xero.archive import frames
-
-for index, image in frames("outputs/demo/movie.ome.zarr", start=128, stop=160):
-    print(index, image[10:30, 10:30].mean())
+```bash
+python tutorials/01_make_demo.py
+xero encode --input outputs/demo/input.h5 --checkpoint tutorials/demo_model.pt \
+  --output outputs/demo/movie.ome.zarr --axis t
 ```
 
-Python ranges are zero-based and stop-exclusive. A consumer retaining every returned image will still accumulate memory; streaming only helps if the consumer releases frames it no longer needs.
+[Train on your own data](../docs/training.md) · [Download biological examples](../imagej/examples/README.md)

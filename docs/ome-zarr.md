@@ -1,144 +1,38 @@
-# Open XERO OME-Zarr images
+# XERO OME-Zarr format
 
-XERO uses **Zarr v3, OME-NGFF 0.5 and the `xero.restart_v1` codec**.
-Open the same compressed image in the browser, ImageJ, napari or Python.
+XERO uses **Zarr v3**, **OME-NGFF 0.5** and the **`xero.restart_v1`** codec. Readers need the XERO codec; OME-Zarr support alone is not sufficient.
 
-## napari
+For usage, see [ImageJ](../imagej/README.md), [napari](../napari/README.md) or [Python](python.md).
 
-XERO requires Python 3.11 or newer.
-
-### Existing napari installation
-
-Activate the **same Python/conda environment as your napari installation** and add the XERO reader:
-
-```bash
-python -m pip install "xero-microscopy[napari] @ https://xero-viewer.pages.dev/downloads/xero_microscopy-0.3.0-py3-none-any.whl"
-```
-
-Restart napari after installation. You do not need to reinstall napari or add a second Qt backend. The command installs XERO and its required dependencies; an environment with incompatible dependency versions may need updates. For an older Python environment, use a separate Python 3.11+ environment instead.
-
-### New napari installation
-
-In a Python 3.11+ environment without napari, install both napari and XERO:
-
-```bash
-python -m pip install "napari[pyqt6]" "xero-microscopy[napari] @ https://xero-viewer.pages.dev/downloads/xero_microscopy-0.3.0-py3-none-any.whl"
-```
-
-### Open an image
-
-Java 8 or newer is required for CPU/OpenCL decoding. The wheel includes the
-decoder JAR. If Java is not on your PATH, set `XERO_JAVA` to a Java executable
-(for example, Fiji's bundled runtime).
-
-Download an [OpenScope calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_OME_Zarr.zip)
-or [spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_OME_Zarr.zip)
-example, unzip it, then open the `.ome.zarr` folder in napari and choose **XERO**.
-Alternatively:
-
-```python
-import napari
-
-viewer = napari.Viewer()
-viewer.open('XERO_OpenScope.ome.zarr', plugin='xero-microscopy')
-napari.run()
-```
-
-CPU is the default. Set `XERO_ZARR_BACKEND=gpu:0` before launching napari to
-select OpenCL GPU 0. Frames are decoded on demand through a lazy Dask array;
-no fully decompressed volume is written to disk.
-
-## Python
-
-For array access without the napari GUI:
-
-```bash
-python -m pip install "xero-microscopy[zarr] @ https://xero-viewer.pages.dev/downloads/xero_microscopy-0.3.0-py3-none-any.whl"
-```
-
-```python
-import os
-os.environ['XERO_ZARR_BACKEND'] = 'gpu:0'  # omit for CPU
-
-import zarr
-image = zarr.open('XERO_OpenScope.ome.zarr', mode='r')['0']
-frame = image[100]
-crop = image[100:104, 50:150, 80:180]
-
-from xero.omezarr import close_decoders
-close_decoders()  # optional explicit resource release
-```
-
-Installing the package registers the codec with Zarr. Other OME-Zarr viewers
-still need the XERO codec to reconstruct pixels.
-
-For a source/editable installation, download the
-[decoder JAR](https://xero-viewer.pages.dev/downloads/XERO_ImageJ.jar) and set
-`XERO_DECODER_JAR` to its path. On a machine configured for the CUDA CLI,
-`XERO_ZARR_BACKEND=cuda:0` uses the native CUDA decoder without Java.
-
-To download a compressed subset:
-
-```bash
-python tutorials/05_download_compressed.py --dataset openscope \
-  --start 100 --end 200 --output downloads/openscope.ome.zarr
-```
-
-Complete restart chunks are downloaded; `download.json` records the requested
-local range. See [frame indexing](download.md).
-
-## ImageJ and browser
-
-In ImageJ, select the `.ome.zarr` folder in
-**Compression (XERO) → Open compressed image**. Choose CPU or OpenCL GPU
-decoding and a frame range. Selected frames are loaded into RAM with progress
-and cancellation controls.
-
-The [browser viewer](https://xero-viewer.pages.dev/xero/) reads compressed
-packet ranges from the OME-Zarr container and decodes them locally using
-WebGPU or CPU, with asynchronous prefetch.
-
-## Memory and random access
-
-The Python reader reuses one decoder and model per process. Switching models
-releases the previous decoder. Seeking requires prediction context from the
-nearest restart; access to arbitrary frames is not constant-cost.
-
-Requested output is limited to 256 MiB per chunk. Zarr also allocates the total
-requested array, so read large recordings in small ranges rather than
-`image[:]`. napari uses one frame per lazy task.
-
-## Compress your data
-
-```bash
-xero encode --input denoised.h5 --checkpoint outputs/model/latest.pt \
-  --output outputs/movie.ome.zarr --axis t
-# Use --axis z for a structural z-stack.
-```
-
-The encoder writes verified restart chunks directly to OME-Zarr. The destination
-must not exist. Frame axes are explicit; physical pixel sizes are not guessed.
-
-## Layout and integrity
+## Layout
 
 ```text
 movie.ome.zarr/
-  zarr.json                 OME axes/scales and XERO packet/chunk index
-  0/zarr.json               float32 array and codec/model configuration
-  0/c/0/0/0                 first independent restart
-  0/c/1/0/0                 next independent restart
-  browser-model/            optional browser tensor export
+  zarr.json           OME axes/scales and packet/chunk index
+  0/zarr.json         array shape, XERO codec and embedded decoder model
+  0/c/0/0/0           first restart chunk
+  0/c/1/0/0           next restart chunk
+  encode_report.json encoding statistics
 ```
 
-Dimensions are `[t,y,x]` or `[z,y,x]`, with one resolution level.
-Separately encoded channels and planes remain separate images. The model
-is stored once in array metadata, not in every chunk.
+Arrays are float32 with `[t,y,x]` or `[z,y,x]` axes and one resolution level. Channels and planes are stored as separate images. The model is stored once in array metadata. `--axis` specifies the frame axis; physical pixel sizes and time intervals are not inferred.
 
-Checksums detect damaged models, packets and chunks. Missing chunks raise an
-error rather than returning a blank frame. Hashes provide integrity, not
-source authenticity; open trusted datasets only.
+## Restarts and random access
 
-Array reading and compressed export are supported. Assigning new pixels with
-`image[...] = ...` does not encode them; use `xero encode`.
+Each chunk contains one independent restart segment, split into entropy packets of at most 64 frames. Prediction continues across packet boundaries until the next restart.
 
-[OME-NGFF specification →](https://ngff.openmicroscopy.org/0.5/)
+The default restart interval is the first power of two whose `K × H × W × 2` exceeds **100,000,000 bytes**, with a minimum of 128 frames. Override it with `--restart 128`. Changing it requires re-encoding, not retraining.
+
+Random access decodes from the preceding restart and finishes each consumed entropy packet for validation. Complete restart chunks can be downloaded independently.
+
+## Writing and integrity
+
+`xero encode` verifies every reconstructed pixel before writing each chunk. It stages one restart block at a time; no intermediate archive or repacking step is needed. Existing destinations are not overwritten. Interrupted runs leave a separate `.incomplete-*` directory.
+
+Checksums detect damaged models, packets and chunks. Missing chunks raise errors rather than becoming blank frames. Only open trusted archives: checksums verify integrity, not authenticity.
+
+`encode_report.json` reports metadata, embedded model and chunk bytes, excluding the report itself and filesystem overhead. `compression_ratio` uses the input dtype; `uint16_equivalent_ratio` uses two bytes per pixel.
+
+The hosted browser additionally uses a browser model export, HTTP range/CORS configuration and a catalog entry.
+
+[OME-NGFF specification](https://ngff.openmicroscopy.org/0.5/)

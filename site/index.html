@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f8f8f3">
   <title>XERO — Microscopy, without the weight.</title>
-  <meta name="description" content="Error-bounded neural compression for biological imaging. Explore real microscopy comparisons, preserve signals, and open compressed data in your browser or ImageJ.">
+  <meta name="description" content="Error-bounded neural compression for biological imaging. Store images as OME-Zarr and decode on demand in your browser, ImageJ, napari or Python.">
   <meta property="og:title" content="XERO — Microscopy, without the weight.">
-  <meta property="og:description" content="Compact images. Explicit error bounds. On-demand decoding for microscopy data sharing.">
+  <meta property="og:description" content="Compact OME-Zarr images. Explicit error bounds. Open with XERO in the browser, ImageJ, napari or Python.">
   <meta property="og:type" content="website">
   <link rel="icon" type="image/svg+xml" href="assets/mark.svg">
-  <link rel="stylesheet" href="style.css?v=20261028-image-drag">
+  <link rel="stylesheet" href="style.css?v=20261030-ome-workflow">
   <script src="app.js?v=20261028-image-drag" defer></script>
 </head>
 <body>
@@ -39,7 +39,7 @@
     <div class="principles wrap" aria-label="XERO capabilities">
       <div><span class="principle-symbol">ε</span><p><strong>A bound at every pixel</strong><span>You choose the tolerated relative error.</span></p></div>
       <div><span class="principle-symbol">↘</span><p><strong>Less to store. Less to transfer.</strong><span>Neural prediction with encoded correction.</span></p></div>
-      <div><span class="principle-symbol">⌘</span><p><strong>Open where you work</strong><span>Browser · ImageJ · Python / CUDA</span></p></div>
+      <div><span class="principle-symbol">⌘</span><p><strong>Open where you work</strong><span>Browser · ImageJ · napari · Python</span></p></div>
     </div>
 
     <section id="explore" class="section wrap gallery-section" aria-labelledby="explore-title">
@@ -96,9 +96,22 @@
     </section>
 
     <section id="use" class="section use-section" aria-labelledby="use-title"><div class="wrap">
-      <div class="section-heading"><div><p class="eyebrow">06 / Make it part of your workflow</p><h2 id="use-title">Start with an image.</h2></div><p>Explore a recording, open it in ImageJ,<br>or train XERO on your own data.</p></div>
-      <div class="use-grid"><a class="use-primary" href="https://xero-viewer.pages.dev/xero/"><div><span class="eyebrow">In your browser</span><span class="card-arrow">↗</span><h3>Meet the viewer.</h3><p>Choose a recording. Adjust contrast.<br>Draw an ROI. Follow the signal.</p></div><img src="assets/viewer.jpg" width="960" height="540" loading="lazy" alt="XERO browser viewer with a loaded voltage recording"></a>
-        <div class="use-secondary"><article><span class="eyebrow">In Fiji / ImageJ</span><h3>Your familiar workspace.</h3><p>CPU and OpenCL GPU decoding.</p><a class="button dark" href="https://xero-viewer.pages.dev/downloads/XERO_ImageJ.jar">Download plugin <span aria-hidden="true">↓</span></a><div class="sample-links"><span>Try an example</span><a href="https://xero-viewer.pages.dev/downloads/XERO_OpenScope.zip">Calcium · 128 frames ↗</a><a href="https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord.zip">Voltage · 128 frames ↗</a></div></article><article class="code-card"><span class="eyebrow">In your pipeline</span><h3>Train. Compress. Analyze.</h3><p>Python / CUDA tools and step-by-step tutorials.</p><a class="text-link" href="https://github.com/NICALab/XERO">Explore the repository <span aria-hidden="true">↗</span></a></article></div></div>
+      <div class="section-heading"><div><p class="eyebrow">06 / Make it part of your workflow</p><h2 id="use-title">One archive.<br>Your choice of tools.</h2></div><p>Store images as OME-Zarr.<br>Open them with XERO where you work.</p></div>
+      <div class="format-strip"><code>movie.ome.zarr<span aria-hidden="true">/</span></code><p>OME-Zarr storage. XERO decoding.<span>Image axes, compressed chunks and the decoder model, together.</span></p><a class="text-link" href="https://github.com/NICALab/XERO/blob/main/docs/ome-zarr.md">Format details <span aria-hidden="true">↗</span></a></div>
+      <div class="use-grid">
+        <a class="use-primary" href="https://xero-viewer.pages.dev/xero/"><div><span class="eyebrow">In your browser</span><span class="card-arrow">↗</span><h3>Meet the viewer.</h3><p>Choose a recording. Adjust contrast.<br>Draw an ROI. Follow the signal.</p></div><img src="assets/viewer.jpg" width="960" height="540" loading="lazy" alt="XERO browser viewer with a loaded voltage recording"></a>
+        <div class="use-secondary">
+          <article><span class="eyebrow">In Fiji / ImageJ</span><h3>Your familiar workspace.</h3><p>Open an OME-Zarr folder with the XERO plugin.<br>Decode on CPU or OpenCL GPU.</p><div class="tool-actions"><a class="button dark" href="https://xero-viewer.pages.dev/downloads/XERO_ImageJ.jar">Download plugin <span aria-hidden="true">↓</span></a><a class="text-link" href="https://github.com/NICALab/XERO/blob/main/imagej/README.md">Install guide ↗</a></div></article>
+          <article class="napari-card"><span class="eyebrow">In napari</span><h3>Browse on demand.</h3><p>Add the XERO reader to napari.<br>Decode frames as you browse, on CPU or OpenCL GPU.</p><a class="button dark" href="https://github.com/NICALab/XERO/blob/main/napari/README.md">Install the reader <span aria-hidden="true">↗</span></a></article>
+        </div>
+      </div>
+      <div class="workflow-grid">
+        <article class="python-card"><p class="eyebrow">In Python</p><h3>Read only what you need.</h3><pre aria-label="Read a frame from XERO OME-Zarr in Python"><code>import zarr
+image = zarr.open('movie.ome.zarr', mode='r')['0']
+frame = image[100]</code></pre><a class="text-link" href="https://github.com/NICALab/XERO/blob/main/docs/python.md">Install XERO &amp; read arrays <span aria-hidden="true">↗</span></a></article>
+        <article class="pipeline-card"><p class="eyebrow">On your own data</p><h3>Train. Compress. Share.</h3><p>Train a model, choose your error bound and encode directly to OME-Zarr with the CUDA CLI.</p><a class="text-link" href="https://github.com/NICALab/XERO/blob/main/docs/training.md">Training guide <span aria-hidden="true">↗</span></a></article>
+      </div>
+      <div class="workflow-examples"><span>Try an OME-Zarr example</span><a href="https://xero-viewer.pages.dev/downloads/XERO_OpenScope_OME_Zarr.zip">Calcium · 128 frames <span aria-hidden="true">↓</span></a><a href="https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_OME_Zarr.zip">Voltage · 128 frames <span aria-hidden="true">↓</span></a><a href="https://github.com/NICALab/XERO/blob/main/imagej/examples/README.md">More examples ↗</a></div>
     </div></section>
   </main>
 <footer class="wrap footer"><div><a class="brand" href="#"><img src="assets/mark.svg" width="24" height="24" alt=""><span>XERO</span></a><p>Error-bounded neural compression enables efficient<br>storage and sharing of biological imaging data.</p></div><div class="footer-links"><a href="https://nica.kaist.ac.kr/">NICA Lab ↗</a><a href="https://github.com/NICALab/XERO">GitHub ↗</a><a href="https://github.com/NICALab/XERO/blob/main/LICENSE">MIT license ↗</a><a href="assets/measurements.json">Measurements ↗</a></div><p class="footer-note">Research software · Original datasets retain their providers' usage and attribution conditions.</p></footer>

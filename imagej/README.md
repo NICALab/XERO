@@ -8,7 +8,7 @@ Open XERO-compressed images in Fiji/ImageJ with CPU or OpenCL GPU decoding.
 
 1. [Download `XERO_ImageJ.jar`](https://xero-viewer.pages.dev/downloads/XERO_ImageJ.jar) and copy it into Fiji/ImageJ's `plugins` directory. Keep the `.jar` extension; do not unzip the plugin.
 2. Restart ImageJ, then run **Plugins → Compression (XERO) → Check CPU or GPU compatibility**. Start with CPU, then check GPU if available.
-3. Choose **Plugins → Compression (XERO) → Open compressed image** and select the local archive folder containing `manifest.json`, `model.npz` and `group_*.bin`.
+3. Choose **Plugins → Compression (XERO) → Open compressed image** and select a local XERO archive or XERO `.ome.zarr` folder.
 4. Use **Auto** compute, choose a frame range, and open it. Selected frames are decoded into an ordinary ImageJ stack. The progress window supports cancellation.
 
 Frame numbers are **one-based and inclusive**. Select a local or mounted archive folder. For online viewing, use the [browser viewer](https://xero-viewer.pages.dev/xero/).
@@ -27,6 +27,12 @@ Choose one of these short biological recordings:
 3. Select frames **1–128** and open the stack. Use ImageJ's brightness/contrast controls and frame slider to explore it. GPU is recommended; CPU is supported but can take longer.
 
 For other recordings or frame ranges, use the [Python archive downloader](../docs/download.md).
+
+[OME-Zarr workflow and napari →](../docs/ome-zarr.md)
+
+To try the new container directly, download the
+[OpenScope OME-Zarr example](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_OME_Zarr.zip),
+unzip it and select the `.ome.zarr` folder in the same Open dialog.
 
 ### Longer examples
 

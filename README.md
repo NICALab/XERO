@@ -22,6 +22,9 @@ XERO compresses microscopy movies and image stacks with a **pixelwise relative-e
 |---|---|---|
 | Audit every reconstructed pixel against the supplied input | Neural prediction plus entropy-coded seed and correction streams | CUDA command line, browser CPU/WebGPU, ImageJ CPU/OpenCL |
 
+**[OME-Zarr and napari](docs/ome-zarr.md)** — repackage existing XERO archives
+without recompression, with lazy reading in Python/napari and support in ImageJ.
+
 ## Start with the viewer
 
 **[Open XERO in your browser](https://xero-viewer.pages.dev/xero/)** — choose a dataset and frame range. The viewer supports CPU/WebGPU decoding, contrast controls, zoom, virtual loading, ROI measurements and TIFF export.

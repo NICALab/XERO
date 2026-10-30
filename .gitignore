@@ -15,4 +15,5 @@ data/
 .env.*
 !*.example
 /imagej/XERO_ImageJ.jar
+/src/xero/omezarr/XERO_ImageJ.jar
 /imagej/examples/*.zip

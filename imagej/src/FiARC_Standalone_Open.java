@@ -19,7 +19,7 @@ public class FiARC_Standalone_Open implements PlugIn {
             d.addNumericField("First frame (1-based)",1,0);d.addNumericField("Last frame (inclusive)",8,0);
             d.addChoice("Compute",new String[]{"Auto (GPU, otherwise CPU)","GPU / OpenCL","CPU"},"Auto (GPU, otherwise CPU)");d.addNumericField("OpenCL GPU index",0,0);
             d.addChoice("GPU workspace",new String[]{"Fast (full frame)","Low VRAM (512-pixel tiles)","Low VRAM (256-pixel tiles)"},"Fast (full frame)");
-            d.addMessage("Select an extracted XERO archive folder.\nSelected frames are decoded into ImageJ memory.\nLow VRAM reduces GPU memory use but is slower.\nEscape cancels loading.");
+            d.addMessage("Select a XERO archive or XERO OME-Zarr folder.\nSelected frames are decoded into ImageJ memory.\nLow VRAM reduces GPU memory use but is slower.\nEscape cancels loading.");
             d.showDialog();if(d.wasCanceled())return;
             Path path=Paths.get(d.getNextString());double a=d.getNextNumber(),b=d.getNextNumber();int first=(int)a,last=(int)b;int compute=d.getNextChoiceIndex();int workspace=d.getNextChoiceIndex();double g=d.getNextNumber();int index=(int)g;
             if(!Double.isFinite(a)||!Double.isFinite(b)||!Double.isFinite(g)||a!=first||b!=last||g!=index||index<0||first<1||last<first)throw new IllegalArgumentException("Invalid integer range or GPU index");

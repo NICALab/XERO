@@ -1,0 +1,11 @@
+name: xero-microscopy
+display_name: XERO
+contributions:
+  commands:
+    - id: xero-microscopy.get_reader
+      title: Read XERO OME-Zarr
+      python_name: xero.napari_reader:get_reader
+  readers:
+    - command: xero-microscopy.get_reader
+      filename_patterns: ['*.ome.zarr', '*.zarr']
+      accepts_directories: true

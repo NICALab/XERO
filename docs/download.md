@@ -34,6 +34,20 @@ The resulting folder contains `manifest.json`, `model.npz`, `group_*.bin` and `d
 
 Open the downloaded folder in **Plugins → Compression (XERO) → Open compressed image**.
 
+## OME-Zarr output
+
+For catalog entries published as OME-Zarr, add `--format ome-zarr`:
+
+```bash
+python tutorials/05_download_compressed.py --dataset openscope \
+  --start 100 --end 200 --format ome-zarr --output downloads/openscope.ome.zarr
+```
+
+This downloads complete restart chunks without decompressing pixels. The
+requested local range is recorded in `download.json`. Use a new empty output
+folder; interrupted OME-Zarr subset downloads do not yet support resuming.
+See [OME-Zarr and napari](ome-zarr.md) for reader setup.
+
 ## Call from Python
 
 ```python
@@ -52,4 +66,7 @@ print(result["stored_source_range"])
 
 ## Integrity and interrupted downloads
 
-Files are checked against their SHA-256 hashes. Re-run the same command to reuse completed files; interrupted files are downloaded again. Use a separate output folder for a different dataset or range. The final `manifest.json` is written after verification.
+Files are checked against their SHA-256 hashes. In the default native format,
+re-run the same command to reuse completed files; interrupted files are downloaded
+again. Use a separate output folder for a different dataset or range. The final
+`manifest.json` is written after verification.

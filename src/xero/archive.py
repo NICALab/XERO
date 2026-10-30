@@ -2,6 +2,7 @@
 import hashlib
 import json
 import math
+import tempfile
 from pathlib import Path
 import types
 import numpy as np
@@ -16,7 +17,12 @@ def digest(path):
 
 def manifest(folder):
     folder = Path(folder)
-    m = json.loads((folder/'manifest.json').read_text())
+    ome = (folder/'zarr.json').exists()
+    if ome:
+        from .omezarr.source import Source
+        m = Source(folder).manifest
+    else:
+        m = json.loads((folder/'manifest.json').read_text())
     if m.get('profile') not in ('fiarc_integer_experimental_v1','fiarc_integer_boundscale_v2'):
         raise ValueError('Unsupported XERO archive profile')
     n,h,w = m['shape']; k = m['restart']
@@ -24,7 +30,7 @@ def manifest(folder):
         raise ValueError('Invalid geometry/restart')
     if m.get('history') != 'repeat_first_decoded' or not 0 < m['tolerance'] <= .5:
         raise ValueError('Invalid history/bound')
-    if m['model'] != 'model.npz' or digest(folder/'model.npz') != m['model_sha256']:
+    if not ome and (m['model'] != 'model.npz' or digest(folder/'model.npz') != m['model_sha256']):
         raise ValueError('Model integrity failure')
     end=0
     for g in m['groups']:
@@ -106,6 +112,20 @@ def encode(input, checkpoint, output, key='data', restart=None, device='cuda:0')
 
 
 def frames(folder, start=0, stop=None, device='cuda:0'):
+    """Stream native or OME-Zarr packets through the same CUDA decoder."""
+    folder = Path(folder)
+    if (folder/'zarr.json').exists():
+        from .omezarr.source import Source
+        ome = Source(folder)
+        # Only the small compressed model is temporary; never decoded images.
+        with tempfile.TemporaryDirectory(prefix='xero-model-') as temp:
+            model = Path(temp)/'model.npz';model.write_bytes(ome.model)
+            yield from _frames(folder,start,stop,device,ome,model)
+    else:
+        yield from _frames(folder,start,stop,device)
+
+
+def _frames(folder, start=0, stop=None, device='cuda:0', ome=None, model=None):
     """Yield (absolute index, float32 image). Finish each consumed entropy packet."""
     cuda(device)
     import torch
@@ -115,23 +135,27 @@ def frames(folder, start=0, stop=None, device='cuda:0'):
     folder=Path(folder);m=manifest(folder);n,h,w=m['shape'];k=m['restart']
     stop=n if stop is None else stop
     if not 0<=start<stop<=n:raise ValueError('Invalid zero-based half-open range')
-    if serialized_profile(folder/'model.npz')!=m['profile']:raise ValueError('Model profile mismatch')
+    model = folder/'model.npz' if model is None else model
+    if serialized_profile(model)!=m['profile']:raise ValueError('Model profile mismatch')
     # Check the embedded bound before allocating neural GPU workspaces.
-    with np.load(folder/'model.npz',allow_pickle=False) as f:
+    with np.load(model,allow_pickle=False) as f:
         meta=json.loads(f['metadata'].tobytes())
     if meta['codec']['tolerance'] != m['tolerance']: raise ValueError('Model/manifest bound mismatch')
     reader=None
     with torch.inference_mode():
         try:
-            reader=MemoryReader(folder/'model.npz',(h,w))
+            reader=MemoryReader(model,(h,w))
             for origin in range(start//k*k,stop,k):
                 selected=[g for g in m['groups'] if origin<=g['start']<min(origin+k,stop)]
                 def packets():
                     import struct
                     for g in selected:
-                        path=folder/g['file']
-                        if path.stat().st_size!=g['bytes']: raise ValueError('Packet size mismatch')
-                        raw=path.read_bytes()
+                        if ome is not None:
+                            raw=ome.packet(g)
+                        else:
+                            path=folder/g['file']
+                            if path.stat().st_size!=g['bytes']: raise ValueError('Packet size mismatch')
+                            raw=path.read_bytes()
                         if hashlib.sha256(raw).hexdigest()!=g['sha256']:raise ValueError('Packet integrity failure')
                         header=__import__('sequence_codec').HEADER.unpack_from(raw)
                         if header[:4]!=(b'FSEEDSG1',g['frames'],h,w):raise ValueError('Packet header mismatch')

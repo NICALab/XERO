@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xero-microscopy"
-version = "0.1.0"
+version = "0.2.0"
 description = "Error-bounded neural compression of optical microscopy images"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -15,9 +15,18 @@ dependencies = ["numpy>=1.26", "h5py>=3.10", "tifffile>=2024.1", "zstandard>=0.2
 [project.optional-dependencies]
 train = ["matplotlib>=3.8", "tensorboard>=2.16"]
 test = ["pytest>=8"]
+zarr = ["zarr>=3.1.5,<3.2", "fsspec>=2025.3", "aiohttp>=3.11"]
+napari = ["zarr>=3.1.5,<3.2", "dask[array]>=2025.3", "napari>=0.5", "fsspec>=2025.3", "aiohttp>=3.11"]
+
+[project.entry-points."zarr.codecs"]
+"xero.restart_v1" = "xero.omezarr.codec:XeroRestartCodec"
+
+[project.entry-points."napari.manifest"]
+xero = "xero:napari.yaml"
 
 [project.scripts]
 xero = "xero.cli:main"
+xero-repack-zarr = "xero.omezarr.repack:main"
 
 [project.urls]
 Repository = "https://github.com/NICALab/XERO"
@@ -28,6 +37,8 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "xero._primitives" = ["csrc/*.cpp", "csrc/*.cu"]
+"xero" = ["napari.yaml"]
+"xero.omezarr" = ["XERO_ImageJ.jar"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

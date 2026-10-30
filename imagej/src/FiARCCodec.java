@@ -86,20 +86,23 @@ public strictfp class FiARCCodec implements AutoCloseable {
         }
     }
     static class Tensor {final float[] a;final Object device;final int c,h,w;Tensor(float[] a,int c,int h,int w){this(a,null,c,h,w);}Tensor(float[] a,Object device,int c,int h,int w){this.a=a;this.device=device;this.c=c;this.h=h;this.w=w;require(a==null||a.length==c*h*w,"Tensor shape");}}
-    final Path folder;final JsonObject manifest,meta,codec;final Map<String,Layer> layers=new LinkedHashMap<>();final Conv engine;
+    final XeroSource source;final JsonObject manifest,meta,codec;final Map<String,Layer> layers=new LinkedHashMap<>();final Conv engine;
     public final int frames,h,w,restart,history;final int[] lut,exp;final float[] seedOffsets,finalOffsets,evenWeights;final float mean,std,inv,gain;final double seedStep,finalStep;final boolean lattice;final int stride;
     final float conditioningTolerance;final double[] seedFactors,finalFactors;
     float[] hist;int age=0;public int packetsRead=0,prefixFrames=0;
     public long coreNanos=0;public int processedFrames=0;
     final Map<String,byte[]> packetCache=new LinkedHashMap<>();
-    public void preloadPackets()throws Exception {packetCache.clear();long bytes=0;for(JsonElement e:manifest.getAsJsonArray("groups")){JsonObject g=e.getAsJsonObject();if(bytes+g.get("bytes").getAsLong()>64L*1024*1024)break;String name=g.get("file").getAsString();byte[] b=checked(folder,name,g.get("sha256").getAsString());require(b.length==g.get("bytes").getAsInt(),"Packet bytes");packetCache.put(name,b);bytes+=b.length;}}
+    public void preloadPackets()throws Exception {packetCache.clear();long bytes=0;for(JsonElement e:manifest.getAsJsonArray("groups")){JsonObject g=e.getAsJsonObject();if(bytes+g.get("bytes").getAsLong()>64L*1024*1024)break;String name=g.get("file").getAsString();byte[] b=source.packet(g);require(b.length==g.get("bytes").getAsInt(),"Packet bytes");packetCache.put(name,b);bytes+=b.length;}}
     public FiARCCodec(Path archive,Conv engine) throws Exception {
-        this.engine=engine;folder=archive.toRealPath();manifest=json(Files.readAllBytes(folder.resolve("manifest.json")));
+        this(XeroSource.open(archive),engine);
+    }
+    public FiARCCodec(XeroSource source,Conv engine) throws Exception {
+        this.engine=engine;this.source=source;manifest=source.manifest;
         String profile=manifest.get("profile").getAsString();
         require(profile.equals("fiarc_integer_experimental_v1")||profile.equals("fiarc_integer_boundscale_v2"),"Unsupported XERO archive profile");
         JsonArray shape=manifest.getAsJsonArray("shape");frames=shape.get(0).getAsInt();h=shape.get(1).getAsInt();w=shape.get(2).getAsInt();restart=manifest.get("restart").getAsInt();
         require(frames>0&&h>=4&&w>=4&&h<=4096&&w<=4096&&restart>=128&&(restart&(restart-1))==0,"Unsupported geometry/restart");
-        Map<String,Npy> a=npz(checked(folder,manifest.get("model").getAsString(),manifest.get("model_sha256").getAsString()));meta=json(a.get("metadata").raw);codec=meta.getAsJsonObject("codec");JsonObject base=meta.getAsJsonObject("base");
+        Map<String,Npy> a=npz(source.model());meta=json(a.get("metadata").raw);codec=meta.getAsJsonObject("codec");JsonObject base=meta.getAsJsonObject("base");
         require(meta.get("profile").getAsString().equals(profile),"Unsupported model profile");
         require(meta.get("bits").getAsInt()==13&&meta.get("weight_bits").getAsInt()==8,"Only A13/W8 supported");
         require(base.get("input_mode").getAsString().equals("relative_latest")&&codec.get("conditioning").getAsString().equals("relative"),"Unsupported conditioning");
@@ -161,7 +164,7 @@ public strictfp class FiARCCodec implements AutoCloseable {
     public void range(int first,int last,BiConsumer<Integer,float[]> sink,BooleanSupplier cancel) throws Exception {
         require(first>=1&&last>=first&&last<=frames,"Invalid requested range");cancellation=cancel;int start=(first-1)/restart*restart;reset();packetsRead=0;prefixFrames=0;coreNanos=0;processedFrames=0;
         int end=last;for(JsonElement e:manifest.getAsJsonArray("groups")){JsonObject g=e.getAsJsonObject();int at=g.get("start").getAsInt();if(at<last&&at+g.get("frames").getAsInt()>=last){end=at+g.get("frames").getAsInt();break;}}int total=end-start;progress.update(0,total,start+1,"Reading compressed packet");
-        for(JsonElement e:manifest.getAsJsonArray("groups")){JsonObject g=e.getAsJsonObject();int pos=g.get("start").getAsInt();if(pos<start||pos>=last)continue;String filename=g.get("file").getAsString();byte[] bytes=packetCache.get(filename);if(bytes==null)bytes=checked(folder,filename,g.get("sha256").getAsString());require(bytes.length==g.get("bytes").getAsInt(),"Packet byte count");Packet p=new Packet(bytes);require(p.h==h&&p.w==w&&p.n==g.get("frames").getAsInt(),"Packet dimensions mismatch");packetsRead++;
+        for(JsonElement e:manifest.getAsJsonArray("groups")){JsonObject g=e.getAsJsonObject();int pos=g.get("start").getAsInt();if(pos<start||pos>=last)continue;String filename=g.get("file").getAsString();byte[] bytes=packetCache.get(filename);if(bytes==null)bytes=source.packet(g);require(bytes.length==g.get("bytes").getAsInt(),"Packet byte count");Packet p=new Packet(bytes);require(p.h==h&&p.w==w&&p.n==g.get("frames").getAsInt(),"Packet dimensions mismatch");packetsRead++;
             // Finish the last packet for terminal entropy / escape integrity checks.
             for(int j=0;j<p.n;j++){checkCancelled();int frame=pos+j;progress.update(frame-start,total,frame+1,frame<first-1?"Restoring restart context":frame>=last?"Verifying packet tail":"Decoding requested frames");if(frame%restart==0)reset();long t=System.nanoTime();float[] rec=engine instanceof FiARCStrictGPU?((FiARCStrictGPU)engine).decodeFrame(this,p):decode(p,forecast());coreNanos+=System.nanoTime()-t;processedFrames++;if(engine instanceof FiARCStrictGPU)age++;else advance(rec);if(frame<first-1)prefixFrames++;else if(frame<last)sink.accept(frame+1,rec);progress.update(frame-start+1,total,frame+1,"Decoded");}
             if(!(engine instanceof FiARCStrictGPU))for(int k=0;k<2;k++)require(p.escapeAt[k]==p.escapes[k].length,"Unused float escapes");
@@ -182,7 +185,7 @@ public strictfp class FiARCCodec implements AutoCloseable {
                 int start=next;float[] result=null;
                 while(next<=wanted){
                     checkCancelled();progress.update(next-start,wanted-start+1,next+1,"Decoding virtual frame");
-                    if(packet==null){JsonObject g=groups.get(groupIndex).getAsJsonObject();require(g.get("start").getAsInt()==next,"Cursor packet position");String file=g.get("file").getAsString();byte[] bytes=packetCache.get(file);if(bytes==null)bytes=checked(folder,file,g.get("sha256").getAsString());require(bytes.length==g.get("bytes").getAsInt(),"Packet byte count");packet=new Packet(bytes);require(packet.h==h&&packet.w==w&&packet.n==g.get("frames").getAsInt(),"Packet dimensions mismatch");within=0;packetsRead++;}
+                    if(packet==null){JsonObject g=groups.get(groupIndex).getAsJsonObject();require(g.get("start").getAsInt()==next,"Cursor packet position");String file=g.get("file").getAsString();byte[] bytes=packetCache.get(file);if(bytes==null)bytes=source.packet(g);require(bytes.length==g.get("bytes").getAsInt(),"Packet byte count");packet=new Packet(bytes);require(packet.h==h&&packet.w==w&&packet.n==g.get("frames").getAsInt(),"Packet dimensions mismatch");within=0;packetsRead++;}
                     if(next%restart==0)reset();long t=System.nanoTime();result=engine instanceof FiARCStrictGPU?((FiARCStrictGPU)engine).decodeFrame(FiARCCodec.this,packet):decode(packet,forecast());coreNanos+=System.nanoTime()-t;processedFrames++;
                     if(engine instanceof FiARCStrictGPU)age++;else advance(result);next++;within++;sink.accept(next,result);
                     if(within==packet.n){if(!(engine instanceof FiARCStrictGPU))for(int k=0;k<2;k++)require(packet.escapeAt[k]==packet.escapes[k].length,"Unused float escapes");packet=null;groupIndex++;}
@@ -192,7 +195,7 @@ public strictfp class FiARCCodec implements AutoCloseable {
         }
     }
     public Cursor cursor(){return new Cursor();}
-    public void close(){packetCache.clear();hist=null;engine.close();}
+    public void close(){packetCache.clear();hist=null;engine.close();source.close();}
     static class Bits {final byte[] a;int p;Bits(byte[] a){this.a=a;}int bit(){require(p<a.length*8,"Truncated Golomb");return (a[p>>3]>>(7-(p++%8)))&1;}}
     static class Rans {
         int[] counts,cursor,state;byte[][] streams;short[] rare;int frame,rareAt;

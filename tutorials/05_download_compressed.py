@@ -6,13 +6,17 @@ Indices are zero-based, end-exclusive. The stored range includes the preceding
 I-frame and complete entropy packets. See download.json for the exact mapping.
 """
 import argparse
+import copy
+import base64
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
+import struct
 import tempfile
 import time
+import zlib
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
@@ -228,6 +232,82 @@ def download(dataset, start, end, output, server=DEFAULT_SERVER, progress=print)
     return result
 
 
+def download_ome_zarr(dataset, start, end, output, server=DEFAULT_SERVER, progress=print):
+    """Download complete restart chunks and rebase their metadata, not pixels."""
+    row=select_dataset(list(list_datasets(server)),dataset)
+    root=row.get('omeZarr','')
+    if not re.fullmatch(r'/omezarr/[\w-]+\.ome\.zarr/',root):
+        raise ValueError('OME-Zarr is not yet published for this recording')
+    base=server.rstrip('/')+root
+    group=_json(base+'zarr.json');array=_json(base+'0/zarr.json')
+    x=group.get('attributes',{}).get('xero',{})
+    if x.get('format')!='xero.ome_zarr.v1' or x.get('complete') is not True:
+        raise ValueError('Incomplete/unsupported XERO OME-Zarr')
+    m=x['archive'];n,h,w=m['shape'];k=_integer(m['restart'],'restart',128)
+    _integer(start,'start');_integer(end,'end',1)
+    if k&(k-1) or not 0<=start<end<=n:raise ValueError('Invalid requested range')
+    if array.get('shape')!=m['shape'] or array.get('data_type')!='float32' or len(array['codecs'])!=1 or array['codecs'][0]['name']!='xero.restart_v1':
+        raise ValueError('Unsupported array/codec')
+    cfg=array['codecs'][0]['configuration']
+    for key in ['profile','restart','tolerance','model_sha256']:
+        if cfg[key]!=m[key]:raise ValueError('Model/index mismatch')
+    encoded=cfg['model_zlib_base64']
+    if len(encoded)>32*1024**2:raise ValueError('Oversized model')
+    dec=zlib.decompressobj();model=dec.decompress(base64.b64decode(encoded,validate=True),16*1024**2+1)
+    if len(model)>16*1024**2 or not dec.eof or dec.unused_data or hashlib.sha256(model).hexdigest()!=_sha(m['model_sha256']):
+        raise ValueError('Model integrity failure')
+    first=start//k*k;stop=min(n,((end+k-1)//k)*k)
+    plan=dict(dataset=row['id'],server=server,format='xero.ome_zarr.v1',requested_source_range=[start,end],stored_source_range=[first,stop],
+        requested_local_range=[start-first,end-first],imagej_requested_first_last=[start-first+1,end-first],source_model_sha256=m['model_sha256'])
+    output=Path(output)
+    if output.is_symlink():raise ValueError('Symlink output is not allowed')
+    output.mkdir(parents=True,exist_ok=True)
+    if any(output.iterdir()):raise FileExistsError('Choose a new empty OME-Zarr output folder')
+    _write_json(output/'download.json',dict(plan,complete=False))
+    chunks={c['key']:c for c in x['chunks']};index=[];receipts=[];transferred=0
+    canonical=lambda v:json.dumps(v,sort_keys=True,separators=(',',':')).encode()
+    for origin in range(first,stop,k):
+        key=f'0/c/{origin//k}/0/0';c=chunks[key]
+        size=_integer(c['bytes'],'chunk bytes',44)
+        if size>512*1024**2:raise ValueError('Oversized restart')
+        incoming=output/'incoming.partial'
+        transferred+=_download(base+key,incoming,_sha(c['sha256']),size)
+        raw=incoming.read_bytes()
+        if raw[:8]!=b'XEROZ001' or hashlib.sha256(raw[40:]).digest()!=raw[8:40]:raise ValueError('Chunk integrity failure')
+        hs,=struct.unpack_from('<I',raw,40)
+        if not 0<hs<=1024**2 or 44+hs>len(raw):raise ValueError('Invalid chunk header')
+        header=json.loads(raw[44:44+hs]);groups=[g for g in m['groups'] if origin<=g['start']<min(n,origin+k)]
+        expected=dict(origin=origin,frames=sum(g['frames'] for g in groups),groups=[{a:(g[a]-origin if a=='start' else g[a]) for a in ['start','frames','bytes','sha256']} for g in groups])
+        if header!=expected:raise ValueError('Chunk/index mismatch')
+        at=44+hs
+        for g in groups:
+            if hashlib.sha256(raw[at:at+g['bytes']]).hexdigest()!=_sha(g['sha256']):raise ValueError('Packet integrity failure')
+            at+=g['bytes']
+        if at!=len(raw):raise ValueError('Trailing chunk bytes')
+        header['origin']=origin-first;head=canonical(header);body=struct.pack('<I',len(head))+head+raw[44+hs:]
+        rebased=b'XEROZ001'+hashlib.sha256(body).digest()+body
+        newkey=f'0/c/{(origin-first)//k}/0/0';p=output/newkey;p.parent.mkdir(parents=True,exist_ok=True);p.write_bytes(rebased)
+        at=44+len(head)
+        for g in groups:
+            index.append(dict(g,start=g['start']-first,xero_chunk=newkey,xero_offset=at));at+=g['bytes']
+        receipts.append(dict(key=newkey,bytes=len(rebased),sha256=hashlib.sha256(rebased).hexdigest()))
+        incoming.unlink()
+        if progress:progress(f'Restart {origin//k}: verified; compressed payload unchanged')
+    group=copy.deepcopy(group);array=copy.deepcopy(array);x=group['attributes']['xero']
+    x['archive']=dict(m,shape=[stop-first,h,w],groups=index);x['chunks']=receipts
+    array['shape']=[stop-first,h,w];array['chunk_grid']['configuration']['chunk_shape']=[min(k,stop-first),h,w]
+    transforms=group['attributes']['ome']['multiscales'][0]['datasets'][0]['coordinateTransformations']
+    scale=next(v['scale'] for v in transforms if v['type']=='scale')
+    if first:
+        translation=next((v for v in transforms if v['type']=='translation'),None)
+        if translation is None:transforms.append(dict(type='translation',translation=[first*scale[0],0,0]))
+        else:translation['translation'][0]+=first*scale[0]
+    _write_json(output/'0/zarr.json',array);_write_json(output/'zarr.json',group)
+    result=dict(plan,complete=True,transferred_bytes=transferred)
+    _write_json(output/'download.json',result)
+    return result
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--list", action="store_true", help="List all recording/channel/plane/bound IDs")
@@ -237,6 +317,7 @@ def main():
     p.add_argument("--end", type=int, help="Original last boundary, zero-based (excluded)")
     p.add_argument("--output", type=Path)
     p.add_argument("--server", default=DEFAULT_SERVER)
+    p.add_argument("--format", choices=['native','ome-zarr'], default='native')
     a = p.parse_args()
     try:
         if a.list:
@@ -249,7 +330,7 @@ def main():
             return
         if a.dataset is None or a.start is None or a.end is None or a.output is None:
             p.error("Use --list, or supply --dataset, --start, --end and --output")
-        download(a.dataset, a.start, a.end, a.output, a.server)
+        (download_ome_zarr if a.format=='ome-zarr' else download)(a.dataset, a.start, a.end, a.output, a.server)
     except (OSError, ValueError, KeyError, RuntimeError) as e:
         p.exit(1, "Download failed: %s\n" % e)
 

@@ -23,8 +23,14 @@ def main():
     ver.add_argument('--archive',required=True);ver.add_argument('--input',required=True);ver.add_argument('--key',default='data');ver.add_argument('--device',default='cuda:0')
     info=s.add_parser('inspect',help='Inspect archive metadata and index without a GPU')
     info.add_argument('--archive',required=True)
+    rep=s.add_parser('repack',help='Repackage an existing archive as OME-Zarr without re-encoding')
+    rep.add_argument('--archive',required=True);rep.add_argument('--output',required=True)
+    rep.add_argument('--axis',choices=['t','z'],required=True)
     a=vars(p.parse_args());cmd=a.pop('command')
-    if cmd=='prepare':
+    if cmd=='repack':
+        from .omezarr import repack_archive
+        result=repack_archive(a['archive'],a['output'],axis=a['axis'])
+    elif cmd=='prepare':
         from .training import prepare
         a['inputs']=a.pop('input');result=prepare(**a)
     else:

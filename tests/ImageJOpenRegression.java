@@ -27,7 +27,7 @@ public final class ImageJOpenRegression {
             throw new AssertionError("Overflow not rejected");
         } catch (ArithmeticException expected) { }
         final boolean gpu=args[2].equals("gpu");
-        JsonArray shape=JsonParser.parseString(new String(Files.readAllBytes(Paths.get(args[0],"manifest.json")),java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonArray("shape");
+        JsonArray shape=XeroSource.open(Paths.get(args[0])).manifest.getAsJsonArray("shape");
         final int frames=shape.get(0).getAsInt(),height=shape.get(1).getAsInt(),width=shape.get(2).getAsInt(),area=height*width;
         ByteBuffer reference=ByteBuffer.wrap(Files.readAllBytes(Paths.get(args[1]))).order(ByteOrder.LITTLE_ENDIAN);
         if(reference.capacity()!=FiARC_Standalone_Open.decodedBytes(frames,height,width))throw new AssertionError("Reference length");

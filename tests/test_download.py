@@ -82,3 +82,14 @@ def test_reject_unsafe_paths_and_incomplete_index():
 
 def test_ambiguous_collection_rejected():
     with pytest.raises(ValueError):d.select_dataset([dict(id='one',collection='fish'),dict(id='two',collection='fish')],'fish')
+
+
+def test_cli_defaults_to_ome_zarr(tmp_path,monkeypatch):
+    import sys
+    from unittest.mock import Mock
+    ome=Mock();native=Mock()
+    monkeypatch.setattr(d,'download_ome_zarr',ome);monkeypatch.setattr(d,'download',native)
+    monkeypatch.setattr(sys,'argv',['download','--dataset','openscope','--start','0','--end','128',
+                                    '--output',str(tmp_path/'movie.ome.zarr')])
+    d.main()
+    assert ome.call_count==1 and native.call_count==0

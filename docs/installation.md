@@ -6,6 +6,7 @@
 |---|---|---|
 | [Hosted browser](https://xero-viewer.pages.dev/xero/) | None | WebGPU, with browser CPU fallback |
 | [ImageJ/Fiji](../imagej/README.md) | One JAR | Java CPU; optional OpenCL GPU |
+| [napari](ome-zarr.md#napari) | XERO reader + napari + Java 8+ | CPU; optional OpenCL GPU |
 | Python CLI | This package + CUDA-enabled PyTorch/toolchain | NVIDIA CUDA |
 
 ## Python environment
@@ -17,7 +18,7 @@ python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 # Install your compatible CUDA PyTorch build here.
-python -m pip install -e '.[train,test]'
+python -m pip install -e '.[train,test,zarr]'
 python -c 'import torch; print(torch.__version__, torch.cuda.is_available())'
 nvcc --version
 xero --help

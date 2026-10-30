@@ -66,6 +66,18 @@ def test_napari_declines_unrelated_directories(tmp_path):
     assert get_reader(str(tmp_path)) is None
 
 
+def test_package_ome_zarr_example(pair,tmp_path):
+    import subprocess
+    import sys
+    _,ome=pair
+    script=Path(__file__).resolve().parents[1]/'tutorials/04_package_imagej_example.py'
+    output=tmp_path/'example.zip'
+    subprocess.run([sys.executable,str(script),'--archive',str(ome),'--output',str(output)],check=True)
+    with zipfile.ZipFile(output) as z:
+        assert all(n.startswith('image.ome.zarr/') for n in z.namelist())
+        assert z.read('image.ome.zarr/0/c/0/0/0')==(ome/'0/c/0/0/0').read_bytes()
+
+
 def test_download_rebases_restart_without_changing_packets(pair,tmp_path,monkeypatch):
     import importlib.util
     import io

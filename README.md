@@ -9,8 +9,9 @@
 [![Project page](https://img.shields.io/badge/Explore-project%20page-427d42.svg)](https://xero-viewer.pages.dev/project/)
 [![Browser viewer](https://img.shields.io/badge/Open-browser%20viewer-0d9488.svg)](https://xero-viewer.pages.dev/xero/)
 [![ImageJ](https://img.shields.io/badge/ImageJ-plugin-e18b34.svg)](imagej/README.md)
+[![napari](https://img.shields.io/badge/napari-reader-9d4edd.svg)](docs/ome-zarr.md#napari)
 
-[**Project page ↗**](https://xero-viewer.pages.dev/project/) · [Try the viewer](https://xero-viewer.pages.dev/xero/) · [Quick start](#quick-start) · [Tutorials](tutorials/README.md) · [ImageJ plugin](imagej/README.md)
+[**Project page ↗**](https://xero-viewer.pages.dev/project/) · [Try the viewer](https://xero-viewer.pages.dev/xero/) · [Quick start](#quick-start) · [Tutorials](tutorials/README.md) · [ImageJ plugin](imagej/README.md) · [napari](docs/ome-zarr.md#napari)
 
 </div>
 
@@ -20,18 +21,19 @@ XERO compresses microscopy movies and image stacks with a **pixelwise relative-e
 
 | Controlled error | Less data to move | Decode where you work |
 |---|---|---|
-| Audit every reconstructed pixel against the supplied input | Neural prediction plus entropy-coded seed and correction streams | CUDA command line, browser CPU/WebGPU, ImageJ CPU/OpenCL |
-
-**[OME-Zarr and napari](docs/ome-zarr.md)** — repackage existing XERO archives
-without recompression, with lazy reading in Python/napari and support in ImageJ.
+| Audit every reconstructed pixel against the supplied input | Neural prediction plus entropy-coded seed and correction streams | Browser, ImageJ, napari and Python/CUDA |
 
 ## Start with the viewer
 
 **[Open XERO in your browser](https://xero-viewer.pages.dev/xero/)** — choose a dataset and frame range. The viewer supports CPU/WebGPU decoding, contrast controls, zoom, virtual loading, ROI measurements and TIFF export.
 
-Prefer Fiji/ImageJ? **[Download the XERO plugin](https://xero-viewer.pages.dev/downloads/XERO_ImageJ.jar)** ([installation guide](imagej/README.md)) and try the **[OpenScope calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope.zip)** or **[spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord.zip)** example.
+**Fiji/ImageJ:** [Download the XERO plugin](https://xero-viewer.pages.dev/downloads/XERO_ImageJ.jar) and follow the [installation guide](imagej/README.md).
 
-Longer examples: **[OpenScope dendritic calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_Longer.zip)** — **5,120 frames / 99.95 MB**; **[zebrafish spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_Longer.zip)** — **8,192 frames / 99.58 MB**. See [memory requirements](imagej/examples/README.md#longer-examples).
+**napari:** Install the [XERO reader](docs/ome-zarr.md#napari), then open an `.ome.zarr` folder to browse frames on demand with CPU or OpenCL GPU decoding.
+
+Try **[OpenScope calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_OME_Zarr.zip)** or **[spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_OME_Zarr.zip)** in either desktop viewer. Unzip each download to obtain its `.ome.zarr` folder.
+
+Longer examples: **[OpenScope dendritic calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_Longer_OME_Zarr.zip)** — **5,120 frames**; **[zebrafish spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_Longer_OME_Zarr.zip)** — **8,192 frames**. See [download sizes and ImageJ memory requirements](imagej/examples/README.md#longer-examples).
 
 ## Download compressed recordings
 
@@ -40,9 +42,9 @@ Select a recording and frame range from the viewer's catalog using the standalon
 ```bash
 python tutorials/05_download_compressed.py --list
 python tutorials/05_download_compressed.py --dataset openscope \
-  --start 0 --end 128 --output downloads/openscope
+  --start 0 --end 128 --output downloads/openscope.ome.zarr
 python tutorials/05_download_compressed.py --dataset spinal-cord-voltage \
-  --start 0 --end 128 --output downloads/spinal_cord
+  --start 0 --end 128 --output downloads/spinal_cord.ome.zarr
 ```
 
 Ranges use **zero-based, end-exclusive indices**. [Dataset selection and frame indexing →](docs/download.md)
@@ -59,7 +61,7 @@ cd XERO
 python -m venv .venv
 source .venv/bin/activate
 # Install a CUDA-enabled PyTorch build appropriate for your GPU and toolkit.
-python -m pip install -e '.[train,test]'
+python -m pip install -e '.[train,test,zarr]'
 xero --help
 ```
 
@@ -84,11 +86,12 @@ xero train --bank outputs/bank --out outputs/model \
   --patch 128 --batch 8 --tiles 8 --refresh 500 --compile --skip-short-audits
 xero encode --input denoised.h5 --checkpoint outputs/model/latest.pt \
   --output outputs/compressed
-xero decode --archive outputs/compressed --output outputs/reconstructed.tif
-xero verify --archive outputs/compressed --input denoised.h5
+xero repack --archive outputs/compressed --output outputs/movie.ome.zarr --axis t
+xero decode --archive outputs/movie.ome.zarr --output outputs/reconstructed.tif
+xero verify --archive outputs/movie.ome.zarr --input denoised.h5
 ```
 
-`--tolerance 0.01` means **1%**. The bound is fixed by the checkpoint. Adjust batch and patch sizes to your GPU memory, and select a checkpoint using calibration data. [Training guide →](docs/training.md)
+`--tolerance 0.01` means **1%**. Use `--axis z` when exporting a structural stack. The bound is fixed by the checkpoint. Adjust batch and patch sizes to your GPU memory, and select a checkpoint using calibration data. [Training guide →](docs/training.md)
 
 ## What is guaranteed?
 
@@ -104,11 +107,11 @@ The bound applies to the **input supplied to the compressor**, with exact recons
 
 ```bash
 # Zero-based, half-open range: frames 100 through 199.
-xero decode --archive outputs/compressed --start 100 --stop 200 \
+xero decode --archive outputs/movie.ome.zarr --start 100 --stop 200 \
   --output outputs/selected.h5
 
 # Stream frames into an ROI mean; no decompressed movie on disk.
-python tutorials/03_stream_roi.py --archive outputs/compressed \
+python tutorials/03_stream_roi.py --archive outputs/movie.ome.zarr \
   --roi 10 30 10 30 --output outputs/roi.csv
 ```
 

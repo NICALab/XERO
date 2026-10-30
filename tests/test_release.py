@@ -1,8 +1,10 @@
 import json
+import base64
 import hashlib
 import subprocess
 import sys
 import zipfile
+import zlib
 from pathlib import Path
 import numpy as np
 import h5py
@@ -61,6 +63,7 @@ def test_imagej_example_catalog():
         assert len(m['sha256'])==64 and len(bytes.fromhex(m['sha256']))==32
         assert len(m['shape_tyx'])==3 and all(v>0 for v in m['shape_tyx'])
         assert m['source_range'][1]-m['source_range'][0]==m['shape_tyx'][0]
+        assert m['format']=='xero.ome_zarr.v1' and m['folder'].endswith('.ome.zarr')
 
 
 @pytest.mark.parametrize('metadata',EXAMPLES,ids=[m['file'] for m in EXAMPLES])
@@ -72,14 +75,24 @@ def test_downloaded_imagej_example(metadata):
     assert hashlib.sha256(path.read_bytes()).hexdigest()==metadata['sha256']
     with zipfile.ZipFile(path) as z:
         prefix=metadata['folder']+'/'
-        m=json.loads(z.read(prefix+'manifest.json'))
+        root=json.loads(z.read(prefix+'zarr.json'))
+        array=json.loads(z.read(prefix+'0/zarr.json'))
+        x=root['attributes']['xero'];m=x['archive']
+        assert x['complete'] and x['format']==metadata['format']
         assert m['shape']==metadata['shape_tyx'] and m['tolerance']==metadata['tolerance']
-        assert hashlib.sha256(z.read(prefix+m['model'])).hexdigest()==m['model_sha256']
+        cfg=array['codecs'][0]['configuration']
+        model=zlib.decompress(base64.b64decode(cfg['model_zlib_base64']))
+        assert hashlib.sha256(model).hexdigest()==m['model_sha256']==metadata['model_sha256']
+        chunks={c['key']:z.read(prefix+c['key']) for c in x['chunks']}
+        for c in x['chunks']:
+            assert len(chunks[c['key']])==c['bytes']
+            assert hashlib.sha256(chunks[c['key']]).hexdigest()==c['sha256']
         for group in m['groups']:
-            packet=z.read(prefix+group['file'])
+            raw=chunks[group['xero_chunk']];at=group['xero_offset']
+            packet=raw[at:at+group['bytes']]
             assert len(packet)==group['bytes']
             assert hashlib.sha256(packet).hexdigest()==group['sha256']
-        assert set(z.namelist())=={prefix+n for n in ['manifest.json','download.json',m['model']]+[g['file'] for g in m['groups']]}
+        assert set(z.namelist())=={prefix+n for n in ['zarr.json','0/zarr.json','download.json',*chunks]}
 
 
 def test_no_workstation_paths():

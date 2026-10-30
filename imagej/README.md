@@ -8,7 +8,7 @@ Open XERO-compressed images in Fiji/ImageJ with CPU or OpenCL GPU decoding.
 
 1. [Download `XERO_ImageJ.jar`](https://xero-viewer.pages.dev/downloads/XERO_ImageJ.jar) and copy it into Fiji/ImageJ's `plugins` directory. Keep the `.jar` extension; do not unzip the plugin.
 2. Restart ImageJ, then run **Plugins → Compression (XERO) → Check CPU or GPU compatibility**. Start with CPU, then check GPU if available.
-3. Choose **Plugins → Compression (XERO) → Open compressed image** and select a local XERO archive or XERO `.ome.zarr` folder.
+3. Choose **Plugins → Compression (XERO) → Open compressed image** and select the `.ome.zarr` folder.
 4. Use **Auto** compute, choose a frame range, and open it. Selected frames are decoded into an ordinary ImageJ stack. The progress window supports cancellation.
 
 Frame numbers are **one-based and inclusive**. Select a local or mounted archive folder. For online viewing, use the [browser viewer](https://xero-viewer.pages.dev/xero/).
@@ -19,27 +19,23 @@ Choose one of these short biological recordings:
 
 | Example | Frame size | Frames | Relative-error bound |
 |---|---|---:|---:|
-| [OpenScope dendritic calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope.zip) | 496 × 496 | 128 | 1% |
-| [Zebrafish spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord.zip) | 1024 × 148 | 128 | 0.5% |
+| [OpenScope dendritic calcium](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_OME_Zarr.zip) | 496 × 496 | 128 | 1% |
+| [Zebrafish spinal-cord voltage](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_OME_Zarr.zip) | 1024 × 148 | 128 | 0.5% |
 
 1. Click an example link above to download its ZIP, then unzip it.
-2. In **Plugins → Compression (XERO) → Open compressed image**, select the extracted `XERO_OpenScope` or `XERO_Spinal_Cord` folder.
+2. In **Plugins → Compression (XERO) → Open compressed image**, select the extracted `XERO_OpenScope.ome.zarr` or `XERO_Spinal_Cord.ome.zarr` folder.
 3. Select frames **1–128** and open the stack. Use ImageJ's brightness/contrast controls and frame slider to explore it. GPU is recommended; CPU is supported but can take longer.
 
 For other recordings or frame ranges, use the [Python archive downloader](../docs/download.md).
 
-[OME-Zarr workflow and napari →](../docs/ome-zarr.md)
-
-To try the new container directly, download the
-[OpenScope OME-Zarr example](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_OME_Zarr.zip),
-unzip it and select the `.ome.zarr` folder in the same Open dialog.
+The same folders can also be opened in [napari or Python](../docs/ome-zarr.md).
 
 ### Longer examples
 
 | Example | Frames | ZIP size | Bound |
 |---|---:|---:|---:|
-| [Download OpenScope dendritic calcium (longer)](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_Longer.zip) | 5,120 | 99.95 MB | 1% |
-| [Download zebrafish spinal-cord voltage (longer)](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_Longer.zip) | 8,192 | 99.58 MB | 0.5% |
+| [Download OpenScope dendritic calcium (longer)](https://xero-viewer.pages.dev/downloads/XERO_OpenScope_Longer_OME_Zarr.zip) | 5,120 | 99.96 MB | 1% |
+| [Download zebrafish spinal-cord voltage (longer)](https://xero-viewer.pages.dev/downloads/XERO_Spinal_Cord_Longer_OME_Zarr.zip) | 8,192 | 99.57 MB | 0.5% |
 
 Open frames **1–5120** or **1–8192**, or a smaller range. Each full example needs approximately **5 GB for float32 pixels**, plus decoder workspace. To open all frames, allocate a **16 GiB ImageJ heap** on a computer with sufficient free RAM. [Memory setup →](examples/README.md#longer-examples)
 

@@ -317,7 +317,8 @@ def main():
     p.add_argument("--end", type=int, help="Original last boundary, zero-based (excluded)")
     p.add_argument("--output", type=Path)
     p.add_argument("--server", default=DEFAULT_SERVER)
-    p.add_argument("--format", choices=['native','ome-zarr'], default='native')
+    p.add_argument("--format", choices=['native','ome-zarr'], default='ome-zarr',
+                   help='Output container (default: ome-zarr)')
     a = p.parse_args()
     try:
         if a.list:

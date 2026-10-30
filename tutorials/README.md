@@ -5,9 +5,9 @@ Run commands from the repository root after [installation](../docs/installation.
 | Tutorial | What you learn | Requires |
 |---|---|---|
 | [`01_make_demo.py`](01_make_demo.py) | Generate a reproducible fluorescence-like single-channel movie | Python, NumPy, HDF5 |
-| [`02_roundtrip.sh`](02_roundtrip.sh) | Prepare, train, encode, decode and verify a 1% bound | NVIDIA CUDA + training extras |
+| [`02_roundtrip.sh`](02_roundtrip.sh) | Prepare, train, encode, export OME-Zarr, decode and verify a 1% bound | NVIDIA CUDA + training/Zarr extras |
 | [`03_stream_roi.py`](03_stream_roi.py) | Measure an ROI without saving a decompressed movie | A supported archive + CUDA |
-| [`04_package_imagej_example.py`](04_package_imagej_example.py) | Package an archive for sharing with ImageJ users | An encoded archive + Python |
+| [`04_package_imagej_example.py`](04_package_imagej_example.py) | Package an OME-Zarr image as a shareable ZIP | An encoded image + Zarr extras |
 | [`05_download_compressed.py`](05_download_compressed.py) | Select a public dataset and frame range; download compressed files only | Python standard library, no GPU |
 | [`06_ome_zarr.py`](06_ome_zarr.py) | Repackage an archive as OME-Zarr and read a small ROI | Zarr extras and Java 8+ or the CUDA decoder |
 | [ImageJ walkthrough](../imagej/README.md) | Open biological examples, CPU/GPU selection and compatibility checks | ImageJ/Fiji |
@@ -15,7 +15,7 @@ Run commands from the repository root after [installation](../docs/installation.
 
 ```bash
 bash tutorials/02_roundtrip.sh
-python tutorials/03_stream_roi.py --archive outputs/demo/archive \
+python tutorials/03_stream_roi.py --archive outputs/demo/movie.ome.zarr \
   --roi 10 30 10 30 --output outputs/demo/roi.csv
 ```
 
@@ -28,7 +28,7 @@ To inspect a subset without accumulating all frames:
 ```python
 from xero.archive import frames
 
-for index, image in frames("outputs/demo/archive", start=128, stop=160):
+for index, image in frames("outputs/demo/movie.ome.zarr", start=128, stop=160):
     print(index, image[10:30, 10:30].mean())
 ```
 

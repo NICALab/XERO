@@ -1,6 +1,6 @@
 # Download compressed data
 
-Use [`tutorials/05_download_compressed.py`](../tutorials/05_download_compressed.py) to download selected recordings and frame ranges. Requires only the Python standard library.
+Use [`tutorials/05_download_compressed.py`](../tutorials/05_download_compressed.py) to download OME-Zarr recordings and frame ranges. Requires only the Python standard library; no pixels are decompressed during download.
 
 ## Choose one dataset string
 
@@ -19,7 +19,7 @@ Use an ID from the first column. Collection names also work when they identify a
 
 ```bash
 python tutorials/05_download_compressed.py --dataset openscope \
-  --start 0 --end 128 --output downloads/openscope
+  --start 0 --end 128 --output downloads/openscope.ome.zarr
 ```
 
 Each selection is a single `[frames, height, width]` stream. Channels and planes are listed separately. The catalog's `axis` field indicates whether frames correspond to time or z.
@@ -28,25 +28,11 @@ Each selection is a single `[frames, height, width]` stream. Channels and planes
 
 `--start` is zero-based and included; `--end` is zero-based and excluded. For example, `--start 100 --end 200` requests source frames 100–199.
 
-The download includes the preceding I-frame context and the complete last packet. For OpenScope, requesting `[100, 200)` stores `[0, 256)`, allowing the selected frames to decode independently of the server.
+The download includes complete restart chunks. For OpenScope, requesting `[100, 200)` stores `[0, 256)`, allowing the selected frames to decode independently of the server.
 
-The resulting folder contains `manifest.json`, `model.npz`, `group_*.bin` and `download.json`. The last file records the requested source range, actually stored range, zero-based local range, and one-based inclusive ImageJ range. In that example, the requested images are local ImageJ frames **101–200**. When the source start is a later I-frame, local frame 1 corresponds to that I-frame rather than source frame 0.
+The `.ome.zarr` folder contains array metadata, compressed chunks and `download.json`. The last file records the requested source range, actually stored range, zero-based local range, and one-based inclusive ImageJ range. In that example, the requested images are local ImageJ frames **101–200**. When the source start is a later I-frame, local frame 1 corresponds to that I-frame rather than source frame 0.
 
-Open the downloaded folder in **Plugins → Compression (XERO) → Open compressed image**.
-
-## OME-Zarr output
-
-For catalog entries published as OME-Zarr, add `--format ome-zarr`:
-
-```bash
-python tutorials/05_download_compressed.py --dataset openscope \
-  --start 100 --end 200 --format ome-zarr --output downloads/openscope.ome.zarr
-```
-
-This downloads complete restart chunks without decompressing pixels. The
-requested local range is recorded in `download.json`. Use a new empty output
-folder; interrupted OME-Zarr subset downloads do not yet support resuming.
-See [OME-Zarr and napari](ome-zarr.md) for reader setup.
+Open the downloaded folder in **Plugins → Compression (XERO) → Open compressed image**, or use [napari or Python](ome-zarr.md).
 
 ## Call from Python
 
@@ -55,18 +41,17 @@ from runpy import run_path
 
 api = run_path("tutorials/05_download_compressed.py")
 datasets = list(api["list_datasets"]())
-result = api["download"](
+result = api["download_ome_zarr"](
     dataset="openscope",
     start=0,
     end=128,
-    output="downloads/openscope",
+    output="downloads/openscope.ome.zarr",
 )
 print(result["stored_source_range"])
 ```
 
 ## Integrity and interrupted downloads
 
-Files are checked against their SHA-256 hashes. In the default native format,
-re-run the same command to reuse completed files; interrupted files are downloaded
-again. Use a separate output folder for a different dataset or range. The final
-`manifest.json` is written after verification.
+Files are checked against their SHA-256 hashes before final metadata is written.
+Use a new empty output directory. Interrupted OME-Zarr subset downloads do not
+yet support resuming; retry into another empty folder.
